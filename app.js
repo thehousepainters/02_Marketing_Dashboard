@@ -157,8 +157,11 @@ function initSettings() {
   renderTrackedPages(cfg.TRACKED_PAGES || []);
   renderCompetitors(cfg.COMPETITOR_URLS || []);
 
-  // Save button
-  document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+  // Save button — saves then reloads any active data modules
+  document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+    saveSettings();
+    if (typeof MetaAds !== 'undefined') MetaAds.reload();
+  });
 
   // Tracked pages
   document.getElementById('addTrackedPageBtn').addEventListener('click', () => {

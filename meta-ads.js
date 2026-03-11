@@ -729,6 +729,6 @@ Respond with ONLY valid JSON in this exact structure:
     }
   }
 
-  return { init };
+  return { init, reload: loadMetaAds };
 
 })();

@@ -556,14 +556,9 @@
 
   <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- Load config.js if it exists (silently skip if not — handled in app.js) -->
-  <script>
-    // Try to load config.js; if missing, app.js falls back to localStorage
-    const configScript = document.createElement('script');
-    configScript.src = 'config.js';
-    configScript.onerror = () => console.info('config.js not found — using localStorage settings.');
-    document.head.appendChild(configScript);
-  </script>
+  <!-- config.js must load first and synchronously so CONFIG is available to all modules.
+       If missing (e.g. GitHub Pages), modules fall back to localStorage. -->
+  <script src="config.js" onerror="console.info('config.js not found — using localStorage settings.')"></script>
   <script src="app.js"></script>
   <script src="meta-ads.js"></script>
   <script src="seo.js"></script>
