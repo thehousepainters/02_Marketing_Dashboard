@@ -174,49 +174,51 @@ function initSettings() {
     if (typeof MetaAds !== 'undefined') MetaAds.reload();
   });
 
-  // Auto-detect Meta Account ID from Windsor.ai
+  // Verify Windsor API key + account ID combination
   document.getElementById('btnDetectAccount').addEventListener('click', async () => {
-    const apiKey = getVal('settingWindsorKey') || AppConfig.get('WINDSOR_API_KEY');
+    const apiKey    = getVal('settingWindsorKey')    || AppConfig.get('WINDSOR_API_KEY');
+    const accountId = getVal('settingMetaAccountId') || AppConfig.get('META_ACCOUNT_ID');
     const btn    = document.getElementById('btnDetectAccount');
     const status = document.getElementById('detectStatus');
+
     if (!apiKey) {
-      status.textContent = '⚠ Enter your Windsor.ai API key first.';
+      status.textContent = '⚠ Enter your Windsor.ai API key first, then save.';
       status.style.color = 'var(--amber)';
       return;
     }
+    if (!accountId) {
+      status.innerHTML = '⚠ Enter your Meta Account ID. Find it in <a href="https://business.facebook.com/settings/ad-accounts" target="_blank" style="color:var(--amber)">Meta Business Manager → Ad Accounts</a> — it\'s the number under your account name.';
+      status.style.color = 'var(--amber)';
+      return;
+    }
+
     btn.disabled    = true;
-    btn.textContent = '⟳ Detecting…';
+    btn.textContent = '⟳ Verifying…';
     status.textContent = '';
     try {
-      // Fetch a tiny slice — just account_id + account_name for yesterday
+      // Test with a single-field, single-day fetch — cheapest possible call
       const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
       const ds = yesterday.toISOString().slice(0, 10);
       const params = new URLSearchParams({
         api_key:   apiKey,
-        fields:    'account_id,account_name',
+        accounts:  accountId,
+        fields:    'account_name,spend',
         date_from: ds,
         date_to:   ds,
       });
       const res = await fetch(`https://connectors.windsor.ai/facebook?${params}`);
-      if (!res.ok) throw new Error(`Windsor returned ${res.status}`);
-      const json  = await res.json();
-      const rows  = Array.isArray(json) ? json : (json.data || []);
-      // Collect unique accounts
-      const seen = {};
-      rows.forEach(r => { if (r.account_id) seen[r.account_id] = r.account_name || r.account_id; });
-      const accounts = Object.entries(seen); // [[id, name], ...]
-      if (!accounts.length) throw new Error('No accounts found. Check your API key.');
-      // Auto-fill with first (or only) account
-      const [id, name] = accounts[0];
-      document.getElementById('settingMetaAccountId').value = id;
-      status.textContent = `✓ Detected: ${name} (${id})${accounts.length > 1 ? ` — ${accounts.length} accounts found, using first` : ''}`;
+      if (!res.ok) throw new Error(`Windsor returned ${res.status} — check your API key and account ID.`);
+      const json = await res.json();
+      const rows = Array.isArray(json) ? json : (json.data || []);
+      const name = rows.length ? (rows[0].account_name || accountId) : accountId;
+      status.textContent = `✓ Connected: ${name} (${accountId})`;
       status.style.color = 'var(--green-dark)';
     } catch (err) {
       status.textContent = `✗ ${err.message}`;
       status.style.color = 'var(--red)';
     } finally {
       btn.disabled    = false;
-      btn.textContent = '⟳ Auto-detect';
+      btn.textContent = '⟳ Verify';
     }
   });
 
