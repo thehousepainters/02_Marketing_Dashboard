@@ -193,7 +193,6 @@ function initSettings() {
       const ds = yesterday.toISOString().slice(0, 10);
       const params = new URLSearchParams({
         api_key:   apiKey,
-        connector: 'facebook',
         fields:    'account_id,account_name',
         date_from: ds,
         date_to:   ds,

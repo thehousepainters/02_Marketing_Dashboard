@@ -77,7 +77,6 @@ Respond with ONLY valid JSON in this exact structure:
 
     const params = new URLSearchParams({
       api_key:   cfg.WINDSOR_API_KEY,
-      connector: 'facebook',
       accounts:  cfg.META_ACCOUNT_ID,
       fields,
       date_from: dateFrom,
