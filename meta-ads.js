@@ -69,9 +69,10 @@ Respond with ONLY valid JSON in this exact structure:
     }
 
     const fields = [
-      'date', 'ad_name', 'campaign_name', 'spend', 'leads',
-      'cost_per_lead', 'purchase_roas', 'clicks', 'ctr',
-      'impressions', 'frequency',
+      'date', 'ad_name', 'campaign', 'adset_name', 'spend',
+      'actions_lead', 'cost_per_action_type_lead',
+      'website_purchase_roas_offsite_conversion_fb_pixel_purchase',
+      'clicks', 'ctr', 'impressions', 'frequency', 'effective_status',
     ].join(',');
 
     const params = new URLSearchParams({
@@ -93,20 +94,24 @@ Respond with ONLY valid JSON in this exact structure:
     return Array.isArray(json) ? json : (json.data || []);
   }
 
-  // Normalise a row from Windsor into consistent field names
+  // Normalise a row from Windsor into consistent internal field names
   function normaliseRow(row) {
+    // Windsor returns CTR as a decimal (0.0159 = 1.59%) — multiply by 100
+    const rawCtr = parseFloat(row.ctr) || 0;
     return {
       date:          row.date || '',
-      ad_name:       row.ad_name || row.adName || '—',
-      campaign_name: row.campaign_name || row.campaignName || '—',
+      ad_name:       row.ad_name || '—',
+      campaign_name: row.campaign || '—',          // Windsor field is "campaign"
+      adset_name:    row.adset_name || '—',
       spend:         parseFloat(row.spend) || 0,
-      leads:         parseInt(row.leads) || 0,
-      cpl:           parseFloat(row.cost_per_lead || row.cpl) || 0,
-      roas:          parseFloat(row.purchase_roas || row.roas) || 0,
+      leads:         parseInt(row.actions_lead) || 0,
+      cpl:           parseFloat(row.cost_per_action_type_lead) || 0,
+      roas:          parseFloat(row.website_purchase_roas_offsite_conversion_fb_pixel_purchase) || 0,
       clicks:        parseInt(row.clicks) || 0,
-      ctr:           parseFloat(row.ctr) || 0,
+      ctr:           rawCtr < 1 ? rawCtr * 100 : rawCtr, // normalise to percentage
       impressions:   parseInt(row.impressions) || 0,
       frequency:     parseFloat(row.frequency) || 0,
+      status:        row.effective_status || '—',
     };
   }
 

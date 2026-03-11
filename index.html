@@ -437,8 +437,12 @@
               <input type="password" class="field-input" id="settingWindsorKey" placeholder="wai_xxxxxxxxxxxxxxxx" autocomplete="off" />
             </div>
             <div class="field-group">
-              <label class="field-label">Windsor.ai Meta Account ID</label>
-              <input type="text" class="field-input" id="settingMetaAccountId" placeholder="act_123456789" autocomplete="off" />
+              <label class="field-label">
+                Windsor.ai Meta Account ID
+                <button type="button" class="detect-btn" id="btnDetectAccount" title="Auto-detect from Windsor.ai using the API key above">⟳ Auto-detect</button>
+              </label>
+              <input type="text" class="field-input" id="settingMetaAccountId" placeholder="e.g. 2609166748554" autocomplete="off" />
+              <p class="field-hint" id="detectStatus"></p>
             </div>
             <div class="field-group">
               <label class="field-label">Claude API Key <span class="field-status" id="statusClaude"></span></label>

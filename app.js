@@ -174,6 +174,53 @@ function initSettings() {
     if (typeof MetaAds !== 'undefined') MetaAds.reload();
   });
 
+  // Auto-detect Meta Account ID from Windsor.ai
+  document.getElementById('btnDetectAccount').addEventListener('click', async () => {
+    const apiKey = getVal('settingWindsorKey') || AppConfig.get('WINDSOR_API_KEY');
+    const btn    = document.getElementById('btnDetectAccount');
+    const status = document.getElementById('detectStatus');
+    if (!apiKey) {
+      status.textContent = '⚠ Enter your Windsor.ai API key first.';
+      status.style.color = 'var(--amber)';
+      return;
+    }
+    btn.disabled    = true;
+    btn.textContent = '⟳ Detecting…';
+    status.textContent = '';
+    try {
+      // Fetch a tiny slice — just account_id + account_name for yesterday
+      const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+      const ds = yesterday.toISOString().slice(0, 10);
+      const params = new URLSearchParams({
+        api_key:   apiKey,
+        connector: 'facebook',
+        fields:    'account_id,account_name',
+        date_from: ds,
+        date_to:   ds,
+      });
+      const res = await fetch(`https://connectors.windsor.ai/facebook?${params}`);
+      if (!res.ok) throw new Error(`Windsor returned ${res.status}`);
+      const json  = await res.json();
+      const rows  = Array.isArray(json) ? json : (json.data || []);
+      // Collect unique accounts
+      const seen = {};
+      rows.forEach(r => { if (r.account_id) seen[r.account_id] = r.account_name || r.account_id; });
+      const accounts = Object.entries(seen); // [[id, name], ...]
+      if (!accounts.length) throw new Error('No accounts found. Check your API key.');
+      // Auto-fill with first (or only) account
+      const [id, name] = accounts[0];
+      document.getElementById('settingMetaAccountId').value = id;
+      status.textContent = `✓ Detected: ${name} (${id})${accounts.length > 1 ? ` — ${accounts.length} accounts found, using first` : ''}`;
+      status.style.color = 'var(--green-dark)';
+    } catch (err) {
+      status.textContent = `✗ ${err.message}`;
+      status.style.color = 'var(--red)';
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = '⟳ Auto-detect';
+    }
+  });
+
   // Tracked pages
   document.getElementById('addTrackedPageBtn').addEventListener('click', () => {
     document.getElementById('addPageForm').style.display = 'flex';
