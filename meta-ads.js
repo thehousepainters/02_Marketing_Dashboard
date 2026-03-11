@@ -9,11 +9,12 @@
 const MetaAds = (() => {
 
   // ---- State ----
-  let currentRange = '7';
-  let allAdsData   = [];
+  let currentRange    = '7';
+  let warRoomRange    = 'yesterday';
+  let allAdsData      = [];
   let spendLeadsChart, cplChart, roasChart;
-  let tableSortKey = 'spend';
-  let tableSortDir = 'desc';
+  let tableSortKey    = 'spend';
+  let tableSortDir    = 'desc';
 
   // ---- War Room system prompt ----
   const WAR_ROOM_SYSTEM_PROMPT = `You are a brutally honest Facebook Ads analyst. No marketing jargon. No fluff. You work for The House Painters, a house painting company in Auckland, New Zealand. Your only job is to make their ads profitable and stop them wasting money.
@@ -491,18 +492,36 @@ Respond with ONLY valid JSON in this exact structure:
     }
 
     showWarRoomState('loading');
+    setWarRoomLoadingMsg('Pulling ad data from Windsor.ai…');
 
     try {
-      // Pull yesterday's data
-      const { from, to } = getDateRange('yesterday');
-      const raw  = await fetchWindsorData(from, to);
-      const rows = raw.map(normaliseRow);
-      const ads  = aggregateByAd(rows);
+      // Try the selected range; if yesterday returns nothing, auto-fall back to last 7 days
+      let rangeUsed = warRoomRange;
+      let { from, to } = getDateRange(rangeUsed);
+      let raw = await fetchWindsorData(from, to);
+      let rows = raw.map(normaliseRow);
+      let ads  = aggregateByAd(rows);
+
+      if (!ads.length && rangeUsed === 'yesterday') {
+        // Yesterday hasn't synced yet (common in NZ/UTC+13) — fall back silently
+        rangeUsed = '7';
+        ({ from, to } = getDateRange('7'));
+        raw  = await fetchWindsorData(from, to);
+        rows = raw.map(normaliseRow);
+        ads  = aggregateByAd(rows);
+      }
 
       if (!ads.length) {
-        showWarRoomError('No ad data found for yesterday. Try a different date or check your account ID.');
+        showWarRoomError('No ad data found. Check your account ID and date range.');
         return;
       }
+
+      const rangeLabelMap = { yesterday: 'yesterday', '7': 'the last 7 days', '30': 'the last 30 days' };
+      const rangeLabel = rangeLabelMap[rangeUsed] || rangeUsed;
+      const autoFallbackNote = rangeUsed !== warRoomRange
+        ? ` (yesterday had no data yet — fell back to last 7 days)` : '';
+
+      setWarRoomLoadingMsg(`Sending ${ads.length} ads to Claude for analysis…`);
 
       // Call Claude
       const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -519,7 +538,7 @@ Respond with ONLY valid JSON in this exact structure:
           system:     WAR_ROOM_SYSTEM_PROMPT,
           messages: [{
             role:    'user',
-            content: `Here is yesterday's ad data for The House Painters. Analyse every ad and respond with the required JSON:\n\n${JSON.stringify(ads, null, 2)}`,
+            content: `Here is ad performance data for The House Painters covering ${rangeLabel}${autoFallbackNote}. Analyse every ad and respond with the required JSON:\n\n${JSON.stringify(ads, null, 2)}`,
           }],
         }),
       });
@@ -532,18 +551,25 @@ Respond with ONLY valid JSON in this exact structure:
       const claudeJson = await claudeRes.json();
       const content    = claudeJson.content?.[0]?.text || '';
 
-      // Extract JSON from Claude response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('Claude returned unexpected format. Check the console for details.');
+      // Extract JSON from Claude response (handle markdown code fences too)
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) ||
+                        content.match(/(\{[\s\S]*\})/);
+      if (!jsonMatch) throw new Error('Claude returned unexpected format. Raw response logged to console.');
 
-      const analysis = JSON.parse(jsonMatch[0]);
+      const jsonStr  = jsonMatch[1] || jsonMatch[0];
+      const analysis = JSON.parse(jsonStr);
       renderWarRoom(analysis);
-      setText('warRoomLastUpdated', `Last analysed: ${timestampNow()}`);
+      setText('warRoomLastUpdated', `Last analysed: ${timestampNow()} · ${rangeLabel}${autoFallbackNote}`);
 
     } catch (err) {
       showWarRoomError(err.message);
-      console.error(err);
+      console.error('[War Room]', err);
     }
+  }
+
+  function setWarRoomLoadingMsg(msg) {
+    const el = document.querySelector('#warRoomLoading .ai-thinking__text');
+    if (el) el.textContent = msg;
   }
 
   function showWarRoomState(state) {
@@ -718,6 +744,15 @@ Respond with ONLY valid JSON in this exact structure:
     document.getElementById('metaExportBtn').addEventListener('click', () => {
       if (allAdsData.length) exportCSV(allAdsData);
       else showToast('No data to export. Load data first.');
+    });
+
+    // War Room date selector
+    document.querySelectorAll('#warRoomDateSelector .date-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#warRoomDateSelector .date-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        warRoomRange = btn.dataset.range;
+      });
     });
 
     // War Room run button

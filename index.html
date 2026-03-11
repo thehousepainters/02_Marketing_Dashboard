@@ -301,7 +301,12 @@
           <h1 class="tab-title">Daily Meta Ads War Room</h1>
           <p class="tab-subtitle">AI-powered verdict on every ad · Powered by Claude</p>
         </div>
-        <div class="tab-controls">
+        <div class="tab-controls" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <div class="date-selector" id="warRoomDateSelector">
+            <button class="date-btn active" data-range="yesterday">Yesterday</button>
+            <button class="date-btn" data-range="7">Last 7 days</button>
+            <button class="date-btn" data-range="30">Last 30 days</button>
+          </div>
           <button class="btn-primary" id="warRoomRunBtn">⚔️ Run War Room</button>
         </div>
       </div>
@@ -315,7 +320,7 @@
           <div class="coming-soon">
             <div class="coming-soon__icon">⚔️</div>
             <p class="coming-soon__title">War Room Ready</p>
-            <p class="coming-soon__text">Click "Run War Room" to pull yesterday's ad data and get a brutally honest verdict on every ad — STOP, KEEP, or TEST — plus 2–3 new ad concepts to test.</p>
+            <p class="coming-soon__text">Select a date range, then click "Run War Room" to pull your ad data and get a brutally honest verdict on every ad — STOP, KEEP, or TEST — plus 2–3 new ad concepts to test.</p>
             <p class="coming-soon__text" style="margin-top:0.5rem"><strong>Requires:</strong> Windsor.ai API key + Claude API key in Settings.</p>
           </div>
         </div>
