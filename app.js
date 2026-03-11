@@ -12,9 +12,9 @@ const AppConfig = (() => {
 
   function load() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    // If config.js loaded a global CONFIG object, use it as base
+    // config.js sets a global CONFIG — use it as base truth for API keys
     const base = (typeof CONFIG !== 'undefined') ? CONFIG : {};
-    return Object.assign({
+    const defaults = {
       WINDSOR_API_KEY: '',
       META_ACCOUNT_ID: '',
       CLAUDE_API_KEY: '',
@@ -30,7 +30,18 @@ const AppConfig = (() => {
         'https://thehousepainters.co.nz/weatherboard-paint-stripping-auckland',
       ],
       COMPETITOR_URLS: [],
-    }, base, saved);
+    };
+    // Start with defaults + config.js values
+    const merged = Object.assign({}, defaults, base);
+    // Only let localStorage override if the stored value is non-empty
+    // (prevents an empty Settings save from wiping config.js API keys)
+    Object.keys(saved).forEach(key => {
+      const val = saved[key];
+      if (Array.isArray(val) ? val.length > 0 : (val !== '' && val != null)) {
+        merged[key] = val;
+      }
+    });
+    return merged;
   }
 
   function save(updates) {
@@ -297,6 +308,14 @@ function initChartDefaults() {
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // One-time cleanup: remove any previously saved empty API keys from localStorage
+  // so config.js values always win when localStorage has blank strings.
+  const _saved = JSON.parse(localStorage.getItem('rc_config') || '{}');
+  const _apiKeys = ['WINDSOR_API_KEY','META_ACCOUNT_ID','CLAUDE_API_KEY','GSC_CLIENT_ID','GA4_PROPERTY_ID','FIRECRAWL_API_KEY'];
+  let _changed = false;
+  _apiKeys.forEach(k => { if (_saved[k] === '') { delete _saved[k]; _changed = true; } });
+  if (_changed) localStorage.setItem('rc_config', JSON.stringify(_saved));
+
   initTabs();
   initSettings();
   initChartDefaults();
