@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reality Check — The House Painters</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== TOP NAV ===== -->
+  <nav class="top-nav" id="topNav">
+    <div class="nav-brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Reality Check</span>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-tab="tab-meta-ads">
+        <span class="tab-icon">📊</span> Meta Ads
+      </button>
+      <button class="nav-tab" data-tab="tab-seo">
+        <span class="tab-icon">🔍</span> SEO Rankings
+      </button>
+      <button class="nav-tab" data-tab="tab-analytics">
+        <span class="tab-icon">📈</span> Analytics
+      </button>
+      <button class="nav-tab" data-tab="tab-page-tracker">
+        <span class="tab-icon">📄</span> Page Tracker
+      </button>
+      <button class="nav-tab" data-tab="tab-competitors">
+        <span class="tab-icon">🎯</span> Competitors
+      </button>
+      <button class="nav-tab" data-tab="tab-war-room">
+        <span class="tab-icon">⚔️</span> War Room
+      </button>
+      <button class="nav-tab" data-tab="tab-action-plan">
+        <span class="tab-icon">✅</span> Action Plan
+      </button>
+      <button class="nav-tab" data-tab="tab-domination">
+        <span class="tab-icon">🏆</span> Domination Score
+      </button>
+      <button class="nav-tab" data-tab="tab-settings">
+        <span class="tab-icon">⚙️</span> Settings
+      </button>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Menu">&#9776;</button>
+  </nav>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- ============================================================ -->
+    <!-- TAB 1: META ADS DAILY PERFORMANCE                            -->
+    <!-- ============================================================ -->
+    <div class="tab-panel active" id="tab-meta-ads">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Meta Ads Daily Performance</h1>
+          <p class="tab-subtitle">The House Painters · Auckland, NZ</p>
+        </div>
+        <div class="tab-controls">
+          <div class="date-selector" id="metaDateSelector">
+            <button class="date-btn" data-range="yesterday">Yesterday</button>
+            <button class="date-btn active" data-range="7">Last 7 days</button>
+            <button class="date-btn" data-range="30">Last 30 days</button>
+          </div>
+          <button class="btn-secondary" id="metaRefreshBtn">↻ Refresh</button>
+          <button class="btn-secondary" id="metaExportBtn">↓ Export CSV</button>
+        </div>
+      </div>
+      <p class="last-updated" id="metaLastUpdated">Last updated: —</p>
+
+      <!-- Alert Panel -->
+      <div class="alert-panel alert-panel--red" id="metaAlertPanel" style="display:none">
+        <div class="alert-panel__header">
+          <span class="alert-icon">🚨</span>
+          <strong>Urgent Attention Required</strong>
+        </div>
+        <div class="alert-panel__body" id="metaAlertList"></div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="cards-grid cards-grid--6" id="metaSummaryCards">
+        <div class="metric-card">
+          <div class="metric-label">Total Spend</div>
+          <div class="metric-value" id="metaTotalSpend">—</div>
+          <div class="metric-sub" id="metaSpendSub"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Leads</div>
+          <div class="metric-value" id="metaTotalLeads">—</div>
+          <div class="metric-sub" id="metaLeadsSub"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Cost Per Lead</div>
+          <div class="metric-value" id="metaCPL">—</div>
+          <div class="metric-sub" id="metaCPLSub"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">ROAS</div>
+          <div class="metric-value" id="metaROAS">—</div>
+          <div class="metric-sub" id="metaROASSub"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Cost Per Click</div>
+          <div class="metric-value" id="metaCPC">—</div>
+          <div class="metric-sub" id="metaCPCSub"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">CTR</div>
+          <div class="metric-value" id="metaCTR">—</div>
+          <div class="metric-sub" id="metaCTRSub"></div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Daily Spend vs Leads</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="metaSpendLeadsChart"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">CPL by Campaign</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="metaCPLChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:0">
+        <div class="card-header">
+          <h3 class="card-title">ROAS by Campaign</h3>
+        </div>
+        <div class="chart-container chart-container--short">
+          <canvas id="metaROASChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Ad-Level Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">All Ads — Full Detail</h3>
+          <span class="card-badge" id="metaAdCount">0 ads</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="metaAdsTable">
+            <thead>
+              <tr>
+                <th data-sort="ad_name">Ad Name <span class="sort-icon">↕</span></th>
+                <th data-sort="campaign_name">Campaign <span class="sort-icon">↕</span></th>
+                <th data-sort="spend">Spend <span class="sort-icon">↕</span></th>
+                <th data-sort="leads">Leads <span class="sort-icon">↕</span></th>
+                <th data-sort="cpl">CPL <span class="sort-icon">↕</span></th>
+                <th data-sort="ctr">CTR <span class="sort-icon">↕</span></th>
+                <th data-sort="impressions">Impr. <span class="sort-icon">↕</span></th>
+                <th data-sort="frequency">Freq. <span class="sort-icon">↕</span></th>
+                <th data-sort="roas">ROAS <span class="sort-icon">↕</span></th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="metaAdsTableBody">
+              <tr><td colspan="10" class="table-empty">Configure Windsor.ai in Settings to load ad data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 2: SEO RANKINGS & DAILY ALERTS                           -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-seo">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">SEO Rankings & Daily Alerts</h1>
+          <p class="tab-subtitle">Google Search Console · thehousepainters.co.nz</p>
+        </div>
+        <div class="tab-controls">
+          <div class="date-selector">
+            <button class="date-btn active" data-range="7">Last 7 days</button>
+            <button class="date-btn" data-range="28">Last 28 days</button>
+            <button class="date-btn" data-range="90">Last 90 days</button>
+          </div>
+        </div>
+      </div>
+      <p class="last-updated">Last updated: —</p>
+
+      <div class="alert-panel alert-panel--red">
+        <div class="alert-panel__header">
+          <span class="alert-icon">🚨</span>
+          <strong>Urgent Attention — Ranking Drops</strong>
+        </div>
+        <div class="alert-panel__body">
+          <p class="coming-soon-msg">Connect Google Search Console in Settings to see ranking alerts.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Keyword Rankings</h3></div>
+        <div class="coming-soon">
+          <div class="coming-soon__icon">🔍</div>
+          <p class="coming-soon__title">SEO Rankings — Coming in Section 2</p>
+          <p class="coming-soon__text">Add your Google Search Console credentials in Settings to unlock keyword tracking, position changes, and daily alerts.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 3: WEBSITE ANALYTICS & DAILY ALERTS                      -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-analytics">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Website Analytics & Daily Alerts</h1>
+          <p class="tab-subtitle">Google Analytics 4 · thehousepainters.co.nz</p>
+        </div>
+      </div>
+      <p class="last-updated">Last updated: —</p>
+
+      <div class="alert-panel alert-panel--amber">
+        <div class="alert-panel__header">
+          <span class="alert-icon">⚠️</span>
+          <strong>Urgent Attention — Conversion & Traffic Anomalies</strong>
+        </div>
+        <div class="alert-panel__body">
+          <p class="coming-soon-msg">Connect Google Analytics 4 in Settings to see conversion and traffic alerts.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Website Analytics</h3></div>
+        <div class="coming-soon">
+          <div class="coming-soon__icon">📈</div>
+          <p class="coming-soon__title">Analytics — Coming in Section 2</p>
+          <p class="coming-soon__text">Add your GA4 credentials in Settings to unlock session data, conversion rates, bounce rate alerts, and traffic source breakdowns.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 4: PAGE TRACKER                                          -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-page-tracker">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Page Tracker</h1>
+          <p class="tab-subtitle">Monitor specific URLs over time</p>
+        </div>
+        <button class="btn-primary" id="addPageBtn">+ Add Page</button>
+      </div>
+      <p class="last-updated">Last updated: —</p>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Tracked Pages</h3></div>
+        <div class="coming-soon">
+          <div class="coming-soon__icon">📄</div>
+          <p class="coming-soon__title">Page Tracker — Coming in Section 3</p>
+          <p class="coming-soon__text">Track individual URLs and watch their rankings, traffic, and conversions grow day by day. Requires GSC + GA4 credentials.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 5: COMPETITOR INTELLIGENCE                               -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-competitors">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Competitor Intelligence</h1>
+          <p class="tab-subtitle">Firecrawl + Claude AI · Auckland painting market</p>
+        </div>
+        <button class="btn-primary" id="scrapeCompetitorsBtn">↻ Scrape Now</button>
+      </div>
+      <p class="last-updated">Last scraped: —</p>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Market Intelligence</h3></div>
+        <div class="coming-soon">
+          <div class="coming-soon__icon">🎯</div>
+          <p class="coming-soon__title">Competitor Intelligence — Coming in Section 3</p>
+          <p class="coming-soon__text">Add competitor URLs and Firecrawl API key in Settings to unlock gap analysis, threat detection, and AI-powered content opportunities.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 6: DAILY META ADS WAR ROOM                              -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-war-room">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Daily Meta Ads War Room</h1>
+          <p class="tab-subtitle">AI-powered verdict on every ad · Powered by Claude</p>
+        </div>
+        <div class="tab-controls">
+          <button class="btn-primary" id="warRoomRunBtn">⚔️ Run War Room</button>
+        </div>
+      </div>
+      <p class="last-updated" id="warRoomLastUpdated">Last analysed: —</p>
+
+      <!-- War Room Content -->
+      <div id="warRoomContent">
+
+        <!-- Loading state -->
+        <div class="war-room-idle" id="warRoomIdle">
+          <div class="coming-soon">
+            <div class="coming-soon__icon">⚔️</div>
+            <p class="coming-soon__title">War Room Ready</p>
+            <p class="coming-soon__text">Click "Run War Room" to pull yesterday's ad data and get a brutally honest verdict on every ad — STOP, KEEP, or TEST — plus 2–3 new ad concepts to test.</p>
+            <p class="coming-soon__text" style="margin-top:0.5rem"><strong>Requires:</strong> Windsor.ai API key + Claude API key in Settings.</p>
+          </div>
+        </div>
+
+        <!-- AI loading state -->
+        <div class="war-room-loading" id="warRoomLoading" style="display:none">
+          <div class="ai-thinking">
+            <div class="ai-spinner"></div>
+            <p class="ai-thinking__text">Pulling ad data from Windsor.ai and sending to Claude for analysis...</p>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="warRoomResults" style="display:none">
+          <!-- STOP/KEEP/TEST summary badges -->
+          <div class="war-room-summary" id="warRoomSummary"></div>
+
+          <!-- Ad verdict cards -->
+          <h2 class="section-heading">Ad Verdicts</h2>
+          <div class="war-room-cards" id="warRoomCards"></div>
+
+          <!-- New ad concepts -->
+          <h2 class="section-heading" style="margin-top:2rem">New Ad Concepts</h2>
+          <div class="war-room-cards" id="warRoomConcepts"></div>
+        </div>
+
+        <!-- Error state -->
+        <div class="war-room-error" id="warRoomError" style="display:none">
+          <div class="alert-panel alert-panel--red">
+            <div class="alert-panel__header">
+              <span class="alert-icon">⚠️</span>
+              <strong>War Room Error</strong>
+            </div>
+            <div class="alert-panel__body" id="warRoomErrorMsg"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 7: DAILY WEBSITE ACTION PLAN                            -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-action-plan">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Daily Website Action Plan</h1>
+          <p class="tab-subtitle">AI-powered SEO & content strategy · Powered by Claude</p>
+        </div>
+        <button class="btn-primary" id="actionPlanRunBtn">✅ Generate Plan</button>
+      </div>
+      <p class="last-updated">Last generated: —</p>
+
+      <div class="alert-panel alert-panel--red" style="display:none" id="actionPlanUrgent">
+        <div class="alert-panel__header">
+          <span class="alert-icon">🚨</span>
+          <strong>Fix Today — Urgent</strong>
+        </div>
+        <div class="alert-panel__body" id="actionPlanUrgentList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Daily Website Action Plan</h3></div>
+        <div class="coming-soon">
+          <div class="coming-soon__icon">✅</div>
+          <p class="coming-soon__title">Action Plan — Coming in Section 4</p>
+          <p class="coming-soon__text">Requires GSC + GA4 + Claude API credentials. Once connected, generates a daily prioritised list of SEO fixes, content improvements, and blog post briefs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 8: MARKET DOMINATION SCORE                              -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-domination">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Market Domination Score</h1>
+          <p class="tab-subtitle">Overall Auckland painting market performance</p>
+        </div>
+      </div>
+      <p class="last-updated">Last updated: —</p>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Domination Score</h3></div>
+        <div class="coming-soon">
+          <div class="coming-soon__icon">🏆</div>
+          <p class="coming-soon__title">Market Domination Score — Coming in Section 4</p>
+          <p class="coming-soon__text">Composite score out of 100 covering SEO, Content, Ads, Analytics, and Competitor position. Requires all data sources connected.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 9: SETTINGS & CONFIGURATION                             -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="tab-header">
+        <div>
+          <h1 class="tab-title">Settings & Configuration</h1>
+          <p class="tab-subtitle">API keys, tracked pages, and alert thresholds</p>
+        </div>
+        <button class="btn-primary" id="saveSettingsBtn">💾 Save All Settings</button>
+      </div>
+
+      <div class="settings-grid">
+
+        <!-- API Keys -->
+        <div class="card settings-section">
+          <div class="card-header">
+            <h3 class="card-title">API Keys</h3>
+            <span class="card-badge card-badge--amber">Stored locally only</span>
+          </div>
+          <p class="settings-note">Keys are saved to your browser's localStorage and never sent anywhere except the respective API endpoints.</p>
+
+          <div class="settings-fields">
+            <div class="field-group">
+              <label class="field-label">Windsor.ai API Key <span class="field-status" id="statusWindsor"></span></label>
+              <input type="password" class="field-input" id="settingWindsorKey" placeholder="wai_xxxxxxxxxxxxxxxx" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Windsor.ai Meta Account ID</label>
+              <input type="text" class="field-input" id="settingMetaAccountId" placeholder="act_123456789" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Claude API Key <span class="field-status" id="statusClaude"></span></label>
+              <input type="password" class="field-input" id="settingClaudeKey" placeholder="sk-ant-xxxxxxxxxxxx" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Google Search Console Client ID</label>
+              <input type="text" class="field-input" id="settingGSCClientId" placeholder="xxxxxxxxxx.apps.googleusercontent.com" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">GA4 Property ID</label>
+              <input type="text" class="field-input" id="settingGA4PropertyId" placeholder="properties/123456789" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Firecrawl API Key</label>
+              <input type="password" class="field-input" id="settingFirecrawlKey" placeholder="fc-xxxxxxxxxxxxxxxx" autocomplete="off" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert Thresholds -->
+        <div class="card settings-section">
+          <div class="card-header">
+            <h3 class="card-title">Alert Thresholds</h3>
+          </div>
+          <div class="settings-fields">
+            <div class="field-group">
+              <label class="field-label">CPL Alert Threshold (NZD)</label>
+              <input type="number" class="field-input" id="settingCPLThreshold" value="80" min="1" max="500" />
+              <p class="field-hint">Alert when Cost Per Lead exceeds this amount.</p>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Frequency Alert Threshold</label>
+              <input type="number" class="field-input" id="settingFreqThreshold" value="3.5" min="1" max="10" step="0.1" />
+              <p class="field-hint">Alert when ad frequency exceeds this value.</p>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Zero-Lead Spend Alert (NZD/day)</label>
+              <input type="number" class="field-input" id="settingZeroLeadThreshold" value="20" min="1" max="500" />
+              <p class="field-hint">Alert when daily spend exceeds this with 0 leads.</p>
+            </div>
+          </div>
+
+          <!-- Service Rules (read-only reference) -->
+          <div class="card-header" style="margin-top:1.5rem">
+            <h3 class="card-title">Service & Budget Rules</h3>
+            <span class="card-badge">Read-only</span>
+          </div>
+          <div class="service-rules">
+            <div class="rule-row rule-row--green">
+              <span class="rule-service">Exterior Painting</span>
+              <span class="rule-detail">Unlimited spend · Primary focus</span>
+            </div>
+            <div class="rule-row rule-row--green">
+              <span class="rule-service">Weatherboard Painting</span>
+              <span class="rule-detail">Unlimited spend · Primary focus</span>
+            </div>
+            <div class="rule-row rule-row--green">
+              <span class="rule-service">Paint Stripping</span>
+              <span class="rule-detail">Unlimited spend · Primary focus</span>
+            </div>
+            <div class="rule-row rule-row--amber">
+              <span class="rule-service">Interior Painting</span>
+              <span class="rule-detail">Max 20% of total spend · Secondary content</span>
+            </div>
+            <div class="rule-row rule-row--red">
+              <span class="rule-service">Roof Painting</span>
+              <span class="rule-detail">Carousel only · 0% standalone · No new blog posts</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tracked Pages -->
+        <div class="card settings-section settings-section--wide">
+          <div class="card-header">
+            <h3 class="card-title">Tracked Pages (Tab 4)</h3>
+            <button class="btn-secondary btn-sm" id="addTrackedPageBtn">+ Add Page</button>
+          </div>
+          <div id="trackedPagesList">
+            <!-- Populated by app.js -->
+          </div>
+          <div class="add-page-form" id="addPageForm" style="display:none">
+            <input type="url" class="field-input" id="newPageUrl" placeholder="https://thehousepainters.co.nz/services/..." />
+            <button class="btn-primary btn-sm" id="confirmAddPageBtn">Add</button>
+            <button class="btn-secondary btn-sm" id="cancelAddPageBtn">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Competitor URLs -->
+        <div class="card settings-section settings-section--wide">
+          <div class="card-header">
+            <h3 class="card-title">Competitor URLs (Tab 5)</h3>
+            <button class="btn-secondary btn-sm" id="addCompetitorBtn">+ Add Competitor</button>
+          </div>
+          <div id="competitorsList">
+            <!-- Populated by app.js -->
+          </div>
+          <div class="add-competitor-form" id="addCompetitorForm" style="display:none">
+            <input type="url" class="field-input" id="newCompetitorUrl" placeholder="https://competitor.co.nz" />
+            <button class="btn-primary btn-sm" id="confirmAddCompetitorBtn">Add</button>
+            <button class="btn-secondary btn-sm" id="cancelAddCompetitorBtn">Cancel</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Save feedback toast -->
+      <div class="toast" id="settingsToast" style="display:none">Settings saved.</div>
+    </div>
+
+  </main>
+
+  <!-- ===== GLOBAL TOAST ===== -->
+  <div class="toast" id="globalToast" style="display:none"></div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Load config.js if it exists (silently skip if not — handled in app.js) -->
+  <script>
+    // Try to load config.js; if missing, app.js falls back to localStorage
+    const configScript = document.createElement('script');
+    configScript.src = 'config.js';
+    configScript.onerror = () => console.info('config.js not found — using localStorage settings.');
+    document.head.appendChild(configScript);
+  </script>
+  <script src="app.js"></script>
+  <script src="meta-ads.js"></script>
+  <script src="seo.js"></script>
+  <script src="analytics.js"></script>
+  <script src="page-tracker.js"></script>
+  <script src="competitors.js"></script>
+  <script src="daily-plan.js"></script>
+  <script src="domination-score.js"></script>
+</body>
+</html>
