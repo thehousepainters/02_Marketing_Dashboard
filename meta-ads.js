@@ -722,10 +722,12 @@ Respond with ONLY valid JSON in this exact structure:
     // Table sort
     initTableSort();
 
-    // Auto-load if keys are configured
+    // Auto-load only if keys are configured
     const cfg = AppConfig.load();
     if (cfg.WINDSOR_API_KEY && cfg.META_ACCOUNT_ID) {
       loadMetaAds();
+    } else {
+      setText('metaLastUpdated', 'Last updated: — (add Windsor.ai keys in Settings)');
     }
   }
 

@@ -320,6 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initSettings();
   initChartDefaults();
 
+  // If no API keys are configured, jump to Settings tab and show a banner
+  const _cfg = AppConfig.load();
+  if (!_cfg.WINDSOR_API_KEY) {
+    document.querySelector('[data-tab="tab-settings"]').click();
+    showToast('👋 Welcome! Add your API keys in Settings to get started.', 6000);
+  }
+
   // Trigger module inits (defined in their own files)
   if (typeof MetaAds !== 'undefined') MetaAds.init();
   if (typeof SEO !== 'undefined') SEO.init();
