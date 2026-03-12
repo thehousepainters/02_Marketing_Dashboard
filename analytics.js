@@ -42,7 +42,9 @@ const Analytics = (() => {
       throw new Error(`Windsor GA4 ${res.status}: ${body}`);
     }
     const json = await res.json();
-    return json.result || [];
+    const rows = json.result || [];
+    console.log('[Analytics debug] key=' + key.slice(0,8) + '… rows=' + rows.length + ' status=' + res.status);
+    return rows;
   }
 
   // ── Aggregation helpers ───────────────────────────────────
