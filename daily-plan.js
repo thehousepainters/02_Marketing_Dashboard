@@ -1,7 +1,9 @@
 /* ============================================================
    daily-plan.js — Tab 7: Website Action Plan
    Data source: Windsor.ai → searchconsole connector
-   AI: Claude API — structured JSON action plan
+   AI: Two parallel Claude calls to stay under 4096 output token cap:
+       Call A → summary + blog_posts
+       Call B → quick_wins + page_fixes + content_updates
    ============================================================ */
 
 'use strict';
@@ -53,10 +55,10 @@ const DailyPlan = (() => {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model:     'claude-sonnet-4-5',
-        max_tokens: 8192,
-        system:    systemPrompt,
-        messages:  [{ role: 'user', content: userContent }],
+        model:      'claude-sonnet-4-5',
+        max_tokens: 4096,
+        system:     systemPrompt,
+        messages:   [{ role: 'user', content: userContent }],
       }),
     });
     if (!res.ok) {
@@ -69,7 +71,6 @@ const DailyPlan = (() => {
 
   // ── JSON extraction (handles accidental markdown fences) ──
   function extractJSON(text) {
-    // Strip ```json ... ``` or ``` ... ``` wrappers if Claude adds them
     const stripped = text
       .replace(/^```(?:json)?\s*/m, '')
       .replace(/\s*```\s*$/m, '')
@@ -119,47 +120,42 @@ const DailyPlan = (() => {
     }));
   }
 
-  // ── Build compact data payload for Claude ─────────────────
-  // Carefully curated: most valuable signal, fewest tokens
-  function buildPayload(keywords, pages) {
+  // ── Build data payloads ───────────────────────────────────
+  // Returns two separate objects — one per Claude call — to keep
+  // each response under the 4096 output token model cap.
+  function buildPayloads(keywords, pages) {
     const path = url => url.replace('https://thehousepainters.co.nz', '') || '/';
 
-    // Opportunity zone (6–20): most likely to reach page 1 — primary blog fuel
+    // Opportunity zone (6–20): primary blog / quick-win fuel
     const opportunity = keywords
       .filter(k => k.position > 5 && k.position <= 20)
       .sort((a, b) => b.impressions - a.impressions)
-      .slice(0, 50)
+      .slice(0, 40)
       .map(k => ({
         query:       k.query,
         position:    +k.position.toFixed(1),
         impressions: k.impressions,
         clicks:      k.clicks,
-        ctr:         (k.ctr * 100).toFixed(1) + '%',
       }));
 
-    // Dead zone (21–50) with decent impressions: need new/better content
+    // Dead zone (21–50) with impressions: need new content
     const deadZone = keywords
       .filter(k => k.position > 20 && k.position <= 50 && k.impressions >= 20)
       .sort((a, b) => b.impressions - a.impressions)
-      .slice(0, 30)
-      .map(k => ({
-        query:       k.query,
-        position:    +k.position.toFixed(1),
-        impressions: k.impressions,
-        clicks:      k.clicks,
-      }));
+      .slice(0, 25)
+      .map(k => ({ query: k.query, position: +k.position.toFixed(1), impressions: k.impressions }));
 
-    // Beyond position 50 with notable impressions: brand new topic opportunities
+    // Beyond 50 with notable impressions: untapped topics
     const beyond = keywords
       .filter(k => k.position > 50 && k.impressions >= 50)
       .sort((a, b) => b.impressions - a.impressions)
-      .slice(0, 20)
+      .slice(0, 15)
       .map(k => ({ query: k.query, impressions: k.impressions }));
 
-    // Top pages by clicks — context on what already works
+    // Top pages by clicks — context on what works
     const topPages = [...pages]
       .sort((a, b) => b.clicks - a.clicks)
-      .slice(0, 15)
+      .slice(0, 12)
       .map(p => ({
         page:        path(p.page),
         clicks:      p.clicks,
@@ -168,11 +164,11 @@ const DailyPlan = (() => {
         position:    +p.position.toFixed(1),
       }));
 
-    // Low-CTR pages with decent impressions and position ≤ 20
+    // Low-CTR pages: page fix candidates
     const lowCTR = pages
       .filter(p => p.impressions >= 30 && p.position <= 20 && (p.ctr * 100) < 3)
       .sort((a, b) => b.impressions - a.impressions)
-      .slice(0, 15)
+      .slice(0, 12)
       .map(p => ({
         page:        path(p.page),
         position:    +p.position.toFixed(1),
@@ -180,92 +176,89 @@ const DailyPlan = (() => {
         ctr:         (p.ctr * 100).toFixed(1) + '%',
       }));
 
-    return {
+    const meta = {
       date_range:             `Last ${currentRange} days`,
       total_keywords_tracked: keywords.length,
       total_pages_tracked:    pages.length,
-      opportunity_keywords:   opportunity,   // positions 6–20 — BLOG IDEAS FUEL
-      dead_zone_keywords:     deadZone,      // positions 21–50
-      beyond_50_keywords:     beyond,        // impressions but position 50+
-      top_pages_by_clicks:    topPages,      // what already works
-      low_ctr_pages:          lowCTR,        // page fix candidates
     };
+
+    // Call A gets the keyword opportunity data → drives blog ideas
+    const payloadA = { ...meta, opportunity_keywords: opportunity, dead_zone_keywords: deadZone, beyond_50_keywords: beyond };
+    // Call B gets page performance data → drives quick wins, fixes, updates
+    const payloadB = { ...meta, opportunity_keywords: opportunity.slice(0, 20), top_pages: topPages, low_ctr_pages: lowCTR };
+
+    return { payloadA, payloadB };
   }
 
-  // ── System prompt ─────────────────────────────────────────
-  const SYSTEM_PROMPT = `You are an expert SEO strategist and content planner for The House Painters, an Auckland residential painting company.
+  // ── Shared business context (prepended to both prompts) ───
+  const BIZ_CONTEXT = `You are an expert SEO strategist for The House Painters, an Auckland residential painting company.
 
-BUSINESS CONTEXT:
-- PRIMARY services (unlimited content/spend): Exterior house painting, weatherboard painting/restoration, paint stripping
-- SECONDARY (max ~20% of content): Interior house painting
-- CAROUSEL ONLY — no standalone content, no new blog posts: Roof painting
-- Target audience: Auckland homeowners, property managers, real estate agents preparing to sell
-- Location: Auckland, New Zealand — mention specific suburbs (North Shore, Remuera, Ponsonby, East Auckland, South Auckland, Titirangi, Devonport, etc.)
-- Competitive market: differentiate on quality, experience, warranty, Auckland-specific knowledge
+SERVICES: PRIMARY (unlimited): exterior painting, weatherboard painting/restoration, paint stripping. SECONDARY (max 20%): interior painting. NO standalone content: roof painting (carousel only).
+AUDIENCE: Auckland homeowners, property managers, real estate agents.
+LOCATION: Auckland NZ — use specific suburbs (North Shore, Remuera, Ponsonby, East Auckland, Titirangi, Devonport, Howick).
 
-CONTENT RULES:
-- Every blog post must target a keyword with clear search intent
-- Auckland-specific angles strongly preferred over generic advice (e.g. "Auckland weather + weatherboard" not just "weatherboard painting")
-- Practical, decision-helping content outperforms thin promotional content
-- Never create standalone roof painting content — carousel mentions only
-- Interior painting content should not dominate — max 1–2 blog ideas out of the total
+Return ONLY valid JSON — no markdown fences, no text outside JSON.`;
 
-You will receive Google Search Console data: keyword rankings (with positions, impressions, clicks) and page performance (with CTR and positions).
+  // ── Call A: Summary + Blog Posts ──────────────────────────
+  const PROMPT_A = `${BIZ_CONTEXT}
 
-Analyse ALL sections of the data provided and return a JSON action plan. Return ONLY valid JSON — no markdown code fences, no commentary outside the JSON.
+You will receive GSC keyword data showing opportunity keywords (positions 6–20), dead zone keywords (21–50), and keywords beyond position 50.
 
-Required JSON structure:
+Generate a summary and blog post ideas. Return this exact JSON structure:
 {
-  "summary": "2–3 sentence executive summary citing the biggest specific opportunities with real numbers from the data",
+  "summary": "2–3 sentences citing specific numbers from the data — biggest traffic opportunities and how many impressions are being left on the table",
   "blog_posts": [
     {
-      "title": "Exact, compelling blog post title — keyword-rich but human-readable",
-      "slug": "url-slug-for-this-post",
-      "target_keyword": "primary keyword to rank for",
-      "supporting_keywords": ["related keyword 1", "related keyword 2", "related keyword 3"],
-      "why": "Data-driven reason — cite real numbers (e.g. 'Ranking #14 with 820 impressions — one push from page 1')",
-      "outline": ["H2: Section title", "H2: Section title", "H2: Section title", "H2: Section title", "H2: Section title"],
+      "title": "Compelling, keyword-rich blog title",
+      "slug": "url-slug",
+      "target_keyword": "primary keyword",
+      "supporting_keywords": ["kw1", "kw2"],
+      "why": "Cite real numbers: e.g. 'Ranking #14 with 820 impressions — just off page 1'",
+      "outline": ["Section 1 title", "Section 2 title", "Section 3 title", "Section 4 title"],
       "service": "exterior|weatherboard|paint-stripping|interior|general",
       "priority": "high|medium",
-      "estimated_word_count": 1200
+      "estimated_word_count": 1100
     }
-  ],
+  ]
+}
+
+Generate exactly 6 blog posts. Prioritise exterior/weatherboard/paint-stripping. At least one must be Auckland suburb-specific. All recommendations must cite real numbers from the data.`;
+
+  // ── Call B: Quick Wins + Page Fixes + Content Updates ─────
+  const PROMPT_B = `${BIZ_CONTEXT}
+
+You will receive GSC data: opportunity keywords (positions 6–20), top pages by clicks, and pages with low CTR despite good positions.
+
+Generate quick wins, page fixes, and content updates. Return this exact JSON structure:
+{
   "quick_wins": [
     {
       "keyword": "search query",
       "current_position": 12.3,
       "impressions": 450,
       "clicks": 8,
-      "page": "/current-ranking-page-path",
-      "action": "Specific, concrete action — e.g. 'Add a FAQ section covering X. Rewrite H1 to include Y. Add 3 before/after photos showing Z.'"
+      "page": "/ranking-page-path",
+      "action": "Specific action — e.g. 'Add FAQ answering X. Update H1 to include Y. Add before/after gallery for Z suburb.'"
     }
   ],
   "page_fixes": [
     {
       "url": "/page-path",
-      "issue": "Specific issue — e.g. 'CTR of 1.2% at position 7 — title tag missing location and benefit'",
-      "fix": "Specific fix with example — e.g. 'Rewrite title to: Auckland Exterior House Painting — 5-Star Rated. Free Quotes.'",
+      "issue": "Specific issue with numbers — e.g. 'CTR 1.2% at position 7 — title missing location and benefit'",
+      "fix": "Specific rewrite — e.g. 'New title: Auckland Exterior Painting — 5-Star Rated. Free Quotes.'",
       "priority": "high|medium|low"
     }
   ],
   "content_updates": [
     {
       "url": "/page-path",
-      "what": "Specific update — e.g. 'Add a cost guide section (NZD ranges for 2025 Auckland prices). Add FAQ schema markup.'",
-      "why": "Data-backed reason — e.g. 'Ranking #4 with 1,200 impressions but only 2.1% CTR — content appears thin vs competitors'"
+      "what": "Specific update — e.g. 'Add 2025 NZD cost guide section. Add FAQ schema. Add suburb-specific before/after photos.'",
+      "why": "Data reason — e.g. 'Position 4 with 1,200 impressions but 2.1% CTR — content thin vs competitors'"
     }
   ]
 }
 
-REQUIREMENTS:
-- Generate 6–10 blog post ideas — this is the most important section
-- Generate 5–10 quick wins from opportunity zone keywords (positions 6–20)
-- Generate 3–6 page fixes for low-CTR or underperforming pages
-- Generate 3–5 content updates for existing pages
-- Every recommendation must be specific, actionable, and data-referenced
-- No generic SEO advice (no "add keywords to your page" without specifics)
-- Prioritise exterior house painting, weatherboard, and paint stripping topics
-- At least one blog post idea should be Auckland suburb-specific or season-specific`;
+Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite real data numbers.`;
 
   // ── Escape helper ─────────────────────────────────────────
   function esc(str) {
@@ -333,7 +326,7 @@ REQUIREMENTS:
         <div class="ap-blog-outline">
           <div class="ap-outline-label">Outline</div>
           <ol class="ap-outline-list">
-            ${post.outline.map(h => `<li>${esc(h.replace(/^H\d:\s*/, ''))}</li>`).join('')}
+            ${post.outline.map(h => `<li>${esc(String(h).replace(/^H\d:\s*/, ''))}</li>`).join('')}
           </ol>
         </div>` : ''}
 
@@ -447,11 +440,10 @@ REQUIREMENTS:
 
     setState('loading');
 
-    const dates = buildDates(currentRange);
-    let keywords = [], pages = [];
-
     // ── Step 1: Fetch GSC data ─────────────────────────────
+    let keywords = [], pages = [];
     try {
+      const dates = buildDates(currentRange);
       const [kwRows, pgRows] = await Promise.all([
         fetchGSC(['query', 'clicks', 'impressions', 'position'], dates),
         fetchGSC(['page', 'clicks', 'impressions', 'ctr', 'position'], dates),
@@ -468,32 +460,40 @@ REQUIREMENTS:
       return;
     }
 
-    // ── Step 2: Build payload & call Claude ────────────────
-    const payload = buildPayload(keywords, pages);
-    let rawResponse = '';
+    // ── Step 2: Two parallel Claude calls ─────────────────
+    // Split the work so each response stays under the 4096 token cap.
+    const { payloadA, payloadB } = buildPayloads(keywords, pages);
+
+    let planA, planB;
     try {
-      rawResponse = await callClaude(SYSTEM_PROMPT, JSON.stringify(payload, null, 2));
+      const [rawA, rawB] = await Promise.all([
+        callClaude(PROMPT_A, JSON.stringify(payloadA, null, 2)),
+        callClaude(PROMPT_B, JSON.stringify(payloadB, null, 2)),
+      ]);
+
+      try { planA = extractJSON(rawA); }
+      catch (e) {
+        console.error('[ActionPlan] Call A JSON parse failed:', rawA.slice(0, 500));
+        throw new Error(`Blog posts response could not be parsed: ${e.message}`);
+      }
+
+      try { planB = extractJSON(rawB); }
+      catch (e) {
+        console.error('[ActionPlan] Call B JSON parse failed:', rawB.slice(0, 500));
+        throw new Error(`Quick wins/fixes response could not be parsed: ${e.message}`);
+      }
+
     } catch (err) {
-      showError(`Claude API error: ${err.message}`);
+      showError(err.message);
       return;
     }
 
-    // ── Step 3: Parse JSON response ────────────────────────
-    let plan;
-    try {
-      plan = extractJSON(rawResponse);
-    } catch (err) {
-      console.error('[ActionPlan] JSON parse failed. Raw response:', rawResponse.slice(0, 800));
-      showError(`Could not parse Claude's response as JSON. Raw response logged to console. (${err.message})`);
-      return;
-    }
-
-    // ── Step 4: Render all sections ────────────────────────
-    renderSummary(plan.summary || '');
-    renderBlogPosts(plan.blog_posts || []);
-    renderQuickWins(plan.quick_wins || []);
-    renderPageFixes(plan.page_fixes || []);
-    renderContentUpdates(plan.content_updates || []);
+    // ── Step 3: Render all sections ────────────────────────
+    renderSummary(planA.summary || '');
+    renderBlogPosts(planA.blog_posts || []);
+    renderQuickWins(planB.quick_wins || []);
+    renderPageFixes(planB.page_fixes || []);
+    renderContentUpdates(planB.content_updates || []);
 
     setState('results');
     setText('apLastUpdated', `Last generated: ${timestampNow()}`);
