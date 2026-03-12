@@ -124,16 +124,18 @@ const SEO = (() => {
     setText('seoKeywordCount',     `${keywords.length} keywords`);
   }
 
-  // ── Render: alerts panel ──────────────────────────────────
+  // ── Render: alerts panel (collapsible) ───────────────────
   function renderAlerts(keywords) {
     const panel = document.getElementById('seoAlertPanel');
     const list  = document.getElementById('seoAlertList');
     if (!panel || !list) return;
 
-    const alerts = [];
+    const drops    = [];
+    const fellOff  = [];
+
     keywords.forEach(kw => {
       if (kw.prevPos && kw.posChange < -3) {
-        alerts.push(
+        drops.push(
           `<div class="alert-item">
             <span class="alert-bullet">●</span>
             <strong>"${esc(kw.query)}"</strong> dropped
@@ -143,7 +145,7 @@ const SEO = (() => {
         );
       }
       if (kw.prevPos && kw.prevPos <= 10 && kw.position > 10) {
-        alerts.push(
+        fellOff.push(
           `<div class="alert-item alert-item--critical">
             <span class="alert-bullet">🔴</span>
             <strong>"${esc(kw.query)}"</strong> FELL OFF PAGE 1 —
@@ -153,12 +155,37 @@ const SEO = (() => {
       }
     });
 
-    if (alerts.length) {
-      list.innerHTML = alerts.join('');
-      panel.style.display = 'block';
-    } else {
-      panel.style.display = 'none';
+    const total = drops.length + fellOff.length;
+    if (!total) { panel.style.display = 'none'; return; }
+
+    // Build summary line
+    const parts = [];
+    if (drops.length)   parts.push(`${drops.length} ranking drop${drops.length > 1 ? 's' : ''}`);
+    if (fellOff.length) parts.push(`${fellOff.length} fell off page 1`);
+    const summary = parts.join(' · ');
+
+    // Inject collapsible header if not already present
+    let header = panel.querySelector('.alert-header');
+    if (!header) {
+      header = document.createElement('div');
+      header.className = 'alert-header';
+      panel.insertBefore(header, list);
+      header.addEventListener('click', () => {
+        const open = list.style.display !== 'none';
+        list.style.display = open ? 'none' : 'block';
+        header.querySelector('.alert-toggle').textContent = open ? '▼ View details' : '▲ Hide details';
+      });
     }
+
+    header.innerHTML = `
+      <span class="alert-header-icon">⚠</span>
+      <span class="alert-header-text">Urgent — ${esc(summary)}</span>
+      <button class="alert-toggle">▼ View details</button>
+    `;
+
+    list.innerHTML = [...fellOff, ...drops].join('');
+    list.style.display = 'none'; // collapsed by default
+    panel.style.display = 'block';
   }
 
   // ── Render: keyword table ─────────────────────────────────

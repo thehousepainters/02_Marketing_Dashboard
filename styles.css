@@ -383,6 +383,32 @@ input, select, textarea { font-family: var(--font); }
   padding: 0.875rem 1.25rem;
 }
 
+/* Collapsible alert header (SEO ranking drops) */
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+}
+.alert-header:hover { background: rgba(0,0,0,0.03); }
+.alert-header-icon  { font-size: 1rem; flex-shrink: 0; }
+.alert-header-text  { flex: 1; font-weight: 600; font-size: 0.875rem; color: var(--text-primary); }
+.alert-toggle {
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--red);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.alert-toggle:hover { background: rgba(220,38,38,0.08); }
+
 .alert-item {
   display: flex;
   align-items: flex-start;
