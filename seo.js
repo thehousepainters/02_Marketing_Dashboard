@@ -229,16 +229,13 @@ const SEO = (() => {
 
     const currDates = buildDates(currentRange);
     const prevDates = buildDates(currentRange, currentRange);
-    // search_type=web filter keeps only organic web results — reduces payload size
-    const webFilter = [['search_type', 'eq', 'web']];
 
     // ── 1. Page-level fetch (always works, run first) ────────
     let pages = [];
     try {
       const pgRaw = await fetchGSC(
         ['page', 'clicks', 'impressions', 'ctr', 'position'],
-        currDates,
-        webFilter
+        currDates
       );
       pages = pgRaw.map(pg => ({
         page:        pg.page || '',
@@ -257,11 +254,11 @@ const SEO = (() => {
          </td></tr>`;
     }
 
-    // ── 2. Keyword fetches (may be large — independent try/catch) ──
+    // ── 2. Keyword fetches (independent try/catch) ───────────
     try {
       const [kwCurr, kwPrev] = await Promise.all([
-        fetchGSC(['query', 'clicks', 'impressions', 'ctr', 'position'], currDates, webFilter),
-        fetchGSC(['query', 'position'], prevDates, webFilter),
+        fetchGSC(['query', 'clicks', 'impressions', 'ctr', 'position'], currDates),
+        fetchGSC(['query', 'position'], prevDates),
       ]);
 
       const prevMap = buildPrevMap(kwPrev);
