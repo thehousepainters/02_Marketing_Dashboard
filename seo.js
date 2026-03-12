@@ -104,24 +104,34 @@ const SEO = (() => {
   }
 
   // ── Render: summary cards ─────────────────────────────────
-  function renderSummaryCards(keywords) {
-    const totalClicks       = keywords.reduce((s, r) => s + r.clicks, 0);
-    const totalImpressions  = keywords.reduce((s, r) => s + r.impressions, 0);
-    const avgCTR            = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-    const avgPos            = keywords.length > 0
-      ? keywords.reduce((s, r) => s + r.position, 0) / keywords.length : 0;
-    const page1Count        = keywords.filter(k => k.position <= 5).length;
-    const oppCount          = keywords.filter(k => k.position > 5  && k.position <= 20).length;
-    const deadCount         = keywords.filter(k => k.position > 20 && k.position <= 50).length;
+  // pages     → complete site-level data (matches GSC totals)
+  // keywords  → query-level data for zone counts only
+  function renderSummaryCards(pages, keywords) {
+    // Metric cards: use page-level totals (complete, matches GSC)
+    const totalClicks      = pages.reduce((s, r) => s + (r.clicks || 0), 0);
+    const totalImpressions = pages.reduce((s, r) => s + (r.impressions || 0), 0);
+    const avgCTR           = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+    // Weighted avg position across pages with impressions
+    const posPages = pages.filter(p => p.impressions > 0);
+    const avgPos   = posPages.length > 0
+      ? posPages.reduce((s, p) => s + p.position * p.impressions, 0) /
+        posPages.reduce((s, p) => s + p.impressions, 0) : 0;
 
     setText('seoTotalClicks',      formatNumber(totalClicks));
     setText('seoTotalImpressions', formatNumber(totalImpressions));
     setText('seoAvgCTR',           avgCTR.toFixed(2) + '%');
     setText('seoAvgPosition',      avgPos.toFixed(1));
-    setText('seoPage1Count',       page1Count);
-    setText('seoOppCount',         oppCount);
-    setText('seoDeadCount',        deadCount);
-    setText('seoKeywordCount',     `${keywords.length} keywords`);
+
+    // Zone counts: use keyword-level positions (more granular)
+    if (keywords && keywords.length) {
+      const page1Count = keywords.filter(k => k.position <= 5).length;
+      const oppCount   = keywords.filter(k => k.position > 5  && k.position <= 20).length;
+      const deadCount  = keywords.filter(k => k.position > 20 && k.position <= 50).length;
+      setText('seoPage1Count',   page1Count);
+      setText('seoOppCount',     oppCount);
+      setText('seoDeadCount',    deadCount);
+      setText('seoKeywordCount', `${keywords.length} keywords`);
+    }
   }
 
   // ── Render: alerts panel (collapsible) ───────────────────
@@ -295,7 +305,7 @@ const SEO = (() => {
         posChange: prevMap[kw.query] ? prevMap[kw.query] - kw.position : 0,
       }));
 
-      renderSummaryCards(allKeywords);
+      renderSummaryCards(pages, allKeywords);
       renderAlerts(allKeywords);
       renderKeywordTable();
     } catch (err) {
@@ -306,13 +316,8 @@ const SEO = (() => {
         `<tr><td colspan="7" class="table-empty text-red">
           Keyword data unavailable: ${esc(err.message)}
          </td></tr>`;
-      // Still populate summary cards from page data if we have it
-      if (pages.length) {
-        const synth = pages
-          .filter(p => p.position > 0 && p.position < 999)
-          .map(p => ({ ...p, query: p.page, posChange: 0, prevPos: null }));
-        renderSummaryCards(synth);
-      }
+      // Still populate summary metrics from page data if keywords failed
+      if (pages.length) renderSummaryCards(pages, []);
     }
 
     setText('seoLastUpdated', `Last updated: ${timestampNow()}`);
