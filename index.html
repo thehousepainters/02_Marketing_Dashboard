@@ -185,33 +185,133 @@
           <p class="tab-subtitle">Google Search Console · thehousepainters.co.nz</p>
         </div>
         <div class="tab-controls">
-          <div class="date-selector">
+          <div class="date-selector" id="seoDateSelector">
             <button class="date-btn active" data-range="7">Last 7 days</button>
             <button class="date-btn" data-range="28">Last 28 days</button>
             <button class="date-btn" data-range="90">Last 90 days</button>
           </div>
+          <button class="btn-secondary" id="seoRefreshBtn">↻ Refresh</button>
         </div>
       </div>
-      <p class="last-updated">Last updated: —</p>
+      <p class="last-updated" id="seoLastUpdated">Last updated: —</p>
 
-      <div class="alert-panel alert-panel--red">
+      <!-- Urgent Alert Panel -->
+      <div class="alert-panel alert-panel--red" id="seoAlertPanel" style="display:none">
         <div class="alert-panel__header">
           <span class="alert-icon">🚨</span>
           <strong>Urgent Attention — Ranking Drops</strong>
         </div>
-        <div class="alert-panel__body">
-          <p class="coming-soon-msg">Connect Google Search Console in Settings to see ranking alerts.</p>
+        <div class="alert-panel__body" id="seoAlertList"></div>
+      </div>
+
+      <!-- Loading spinner -->
+      <div id="seoLoading" style="display:none">
+        <div class="ai-thinking">
+          <div class="ai-spinner"></div>
+          <p class="ai-thinking__text">Loading Search Console data from Windsor.ai…</p>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Keyword Rankings</h3></div>
-        <div class="coming-soon">
-          <div class="coming-soon__icon">🔍</div>
-          <p class="coming-soon__title">SEO Rankings — Coming in Section 2</p>
-          <p class="coming-soon__text">Add your Google Search Console credentials in Settings to unlock keyword tracking, position changes, and daily alerts.</p>
+      <!-- Main content -->
+      <div id="seoContent">
+
+        <!-- Summary Cards -->
+        <div class="cards-grid cards-grid--4">
+          <div class="metric-card">
+            <div class="metric-label">Total Clicks</div>
+            <div class="metric-value" id="seoTotalClicks">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Impressions</div>
+            <div class="metric-value" id="seoTotalImpressions">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg CTR</div>
+            <div class="metric-value" id="seoAvgCTR">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Position</div>
+            <div class="metric-value" id="seoAvgPosition">—</div>
+          </div>
         </div>
-      </div>
+
+        <!-- Zone Summary Strip -->
+        <div class="zone-summary-strip">
+          <div class="zone-strip-item zone-strip-item--green">
+            <span class="zone-strip-count" id="seoPage1Count">—</span>
+            <span class="zone-strip-label">Page 1 Wins (#1–5)</span>
+          </div>
+          <div class="zone-strip-item zone-strip-item--amber">
+            <span class="zone-strip-count" id="seoOppCount">—</span>
+            <span class="zone-strip-label">Opportunity Zone (#6–20)</span>
+          </div>
+          <div class="zone-strip-item zone-strip-item--red">
+            <span class="zone-strip-count" id="seoDeadCount">—</span>
+            <span class="zone-strip-label">Dead Zone (#21–50)</span>
+          </div>
+        </div>
+
+        <!-- Keyword Rankings Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Keyword Rankings</h3>
+            <span class="card-badge" id="seoKeywordCount">0 keywords</span>
+          </div>
+
+          <!-- Zone filter tabs -->
+          <div class="zone-filter" id="seoZoneFilter">
+            <button class="zone-btn active" data-zone="all">All Keywords</button>
+            <button class="zone-btn zone-btn--green" data-zone="win">✅ Page 1 Wins</button>
+            <button class="zone-btn zone-btn--amber" data-zone="opportunity">⚡ Opportunity</button>
+            <button class="zone-btn zone-btn--red" data-zone="dead">🔴 Dead Zone</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table" id="seoKeywordsTable">
+              <thead>
+                <tr>
+                  <th>Keyword</th>
+                  <th data-sort="position">Position <span class="sort-icon">↕</span></th>
+                  <th>Change</th>
+                  <th>Zone</th>
+                  <th data-sort="clicks">Clicks <span class="sort-icon">↕</span></th>
+                  <th data-sort="impressions">Impr. <span class="sort-icon">↕</span></th>
+                  <th data-sort="ctr">CTR <span class="sort-icon">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="seoKeywordsTableBody">
+                <tr><td colspan="7" class="table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Page Performance Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Page Performance</h3>
+            <span class="card-badge card-badge--amber">Low CTR on page 1 flagged amber</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="seoPagesTable">
+              <thead>
+                <tr>
+                  <th>URL</th>
+                  <th>Clicks</th>
+                  <th>Impressions</th>
+                  <th>CTR</th>
+                  <th>Avg Position</th>
+                  <th>Zone</th>
+                </tr>
+              </thead>
+              <tbody id="seoPagesTableBody">
+                <tr><td colspan="6" class="table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /#seoContent -->
     </div>
 
     <!-- ============================================================ -->
@@ -223,27 +323,113 @@
           <h1 class="tab-title">Website Analytics & Daily Alerts</h1>
           <p class="tab-subtitle">Google Analytics 4 · thehousepainters.co.nz</p>
         </div>
+        <div class="tab-controls">
+          <div class="date-selector" id="analyticsDateSelector">
+            <button class="date-btn active" data-range="7">Last 7 days</button>
+            <button class="date-btn" data-range="28">Last 28 days</button>
+            <button class="date-btn" data-range="90">Last 90 days</button>
+          </div>
+          <button class="btn-secondary" id="analyticsRefreshBtn">↻ Refresh</button>
+        </div>
       </div>
-      <p class="last-updated">Last updated: —</p>
+      <p class="last-updated" id="anaLastUpdated">Last updated: —</p>
 
-      <div class="alert-panel alert-panel--amber">
+      <!-- Urgent Alert Panel -->
+      <div class="alert-panel alert-panel--red" id="anaAlertPanel" style="display:none">
         <div class="alert-panel__header">
-          <span class="alert-icon">⚠️</span>
+          <span class="alert-icon">🚨</span>
           <strong>Urgent Attention — Conversion & Traffic Anomalies</strong>
         </div>
-        <div class="alert-panel__body">
-          <p class="coming-soon-msg">Connect Google Analytics 4 in Settings to see conversion and traffic alerts.</p>
+        <div class="alert-panel__body" id="anaAlertList"></div>
+      </div>
+
+      <!-- Loading spinner -->
+      <div id="anaLoading" style="display:none">
+        <div class="ai-thinking">
+          <div class="ai-spinner"></div>
+          <p class="ai-thinking__text">Loading GA4 data from Windsor.ai…</p>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Website Analytics</h3></div>
-        <div class="coming-soon">
-          <div class="coming-soon__icon">📈</div>
-          <p class="coming-soon__title">Analytics — Coming in Section 2</p>
-          <p class="coming-soon__text">Add your GA4 credentials in Settings to unlock session data, conversion rates, bounce rate alerts, and traffic source breakdowns.</p>
+      <!-- Main content -->
+      <div id="anaContent">
+
+        <!-- Overview Cards -->
+        <div class="cards-grid cards-grid--6">
+          <div class="metric-card">
+            <div class="metric-label">Sessions</div>
+            <div class="metric-value" id="anaSessions">—</div>
+            <div class="metric-sub" id="anaNvR"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Users</div>
+            <div class="metric-value" id="anaUsers">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Bounce Rate</div>
+            <div class="metric-value" id="anaBounce">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Session Duration</div>
+            <div class="metric-value" id="anaDuration">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Conversions</div>
+            <div class="metric-value" id="anaConversions">—</div>
+            <div class="metric-sub" id="anaConvSub"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Conversion Rate</div>
+            <div class="metric-value" id="anaConvRate">—</div>
+          </div>
         </div>
-      </div>
+
+        <!-- Traffic Sources + Device Breakdown -->
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Traffic Sources</h3>
+            </div>
+            <div class="channel-list" id="anaChannelsBody">
+              <p class="text-muted" style="padding:1rem">Loading…</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Device Breakdown</h3>
+            </div>
+            <div class="device-list" id="anaDevicesBody">
+              <p class="text-muted" style="padding:1rem">Loading…</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Pages Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Top Pages by Traffic</h3>
+            <span class="card-badge card-badge--red">Red = low conv. · Amber = high bounce</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="anaPagesTable">
+              <thead>
+                <tr>
+                  <th>Page</th>
+                  <th>Sessions</th>
+                  <th>Conv. Rate</th>
+                  <th>Bounce Rate</th>
+                  <th>Avg Duration</th>
+                  <th>Conversions</th>
+                </tr>
+              </thead>
+              <tbody id="anaPagesTableBody">
+                <tr><td colspan="6" class="table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /#anaContent -->
     </div>
 
     <!-- ============================================================ -->

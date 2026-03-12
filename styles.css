@@ -887,3 +887,183 @@ input, select, textarea { font-family: var(--font); }
   .verdict-card__metrics { grid-template-columns: repeat(3, 1fr); }
   .metric-value { font-size: 1.5rem; }
 }
+
+/* ============================================================
+   SEO TAB — Zone badges, filter, position changes
+   ============================================================ */
+
+/* Zone summary strip */
+.zone-summary-strip {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.zone-strip-item {
+  flex: 1;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.zone-strip-item--green { border-left-color: var(--green); }
+.zone-strip-item--amber { border-left-color: var(--amber); }
+.zone-strip-item--red   { border-left-color: var(--red);   }
+.zone-strip-count {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.zone-strip-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Zone filter pill buttons */
+.zone-filter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.zone-btn {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.zone-btn:hover         { border-color: var(--text-primary); color: var(--text-primary); }
+.zone-btn.active        { background: var(--text-primary); border-color: var(--text-primary); color: #fff; }
+.zone-btn--green.active { background: var(--green); border-color: var(--green); }
+.zone-btn--amber.active { background: var(--amber); border-color: var(--amber); }
+.zone-btn--red.active   { background: var(--red);   border-color: var(--red);   }
+
+/* Small badges used in table cells */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge--green { background: var(--green);        color: #fff; }
+.badge--amber { background: var(--amber);        color: #fff; }
+.badge--red   { background: var(--red);          color: #fff; }
+.badge--grey  { background: var(--text-muted);   color: #fff; }
+
+/* Position change indicators */
+.pos-up   { color: var(--green); font-weight: 700; }
+.pos-down { color: var(--red);   font-weight: 700; }
+
+/* Table cell helpers */
+.td-keyword { max-width: 280px; word-break: break-word; }
+.td-url     { max-width: 320px; word-break: break-all; font-size: 0.82rem; }
+.td-center  { text-align: center; }
+.td-number  { text-align: right; font-variant-numeric: tabular-nums; }
+.text-red   { color: var(--red) !important; font-weight: 600; }
+.text-amber { color: var(--amber) !important; font-weight: 600; }
+.text-muted { color: var(--text-muted); }
+
+/* Highlighted rows */
+.row-red    { background: #fff5f5; }
+.row-amber  { background: #fffbeb; }
+
+/* 4-col metric cards */
+.cards-grid--4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   ANALYTICS TAB — Channels, devices
+   ============================================================ */
+
+/* Traffic channel list */
+.channel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.5rem 1.5rem 1.5rem;
+}
+.channel-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 60px 48px 80px;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+.channel-name { font-weight: 600; color: var(--text-primary); }
+.channel-bar-wrap {
+  background: var(--bg-page);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.channel-bar {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 4px;
+  transition: width 0.4s ease;
+}
+.channel-stat { text-align: right; color: var(--text-secondary); font-size: 0.8rem; }
+
+/* Device breakdown list */
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 1.5rem 1.5rem;
+}
+.device-row {
+  display: grid;
+  grid-template-columns: 28px 72px 1fr 52px 100px 80px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.device-icon    { font-size: 1.1rem; }
+.device-name    { font-weight: 600; text-transform: capitalize; }
+.device-bar-wrap {
+  background: var(--bg-page);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.device-bar {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 999px;
+  min-width: 4px;
+  transition: width 0.4s ease;
+}
+.device-pct      { text-align: right; font-weight: 700; }
+.device-sessions { color: var(--text-secondary); font-size: 0.8rem; }
+.device-conv     { text-align: right; color: var(--green); font-weight: 600; font-size: 0.8rem; }
+
+@media (max-width: 900px) {
+  .zone-summary-strip { flex-direction: column; }
+  .cards-grid--4 { grid-template-columns: repeat(2, 1fr); }
+  .channel-row { grid-template-columns: 120px 1fr 50px 80px; }
+  .channel-row .channel-stat:nth-child(4) { display: none; }
+  .device-row { grid-template-columns: 28px 60px 1fr 40px 70px; }
+  .device-row .device-conv { display: none; }
+}

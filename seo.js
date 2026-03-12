@@ -1,14 +1,330 @@
 /* ============================================================
    seo.js — Tab 2: SEO Rankings & Daily Alerts
-   Data source: Google Search Console API
-   Section 2 — not yet implemented
+   Data source: Windsor.ai → searchconsole connector
    ============================================================ */
 
 'use strict';
 
 const SEO = (() => {
-  function init() {
-    // Placeholder — implemented in Section 2
+  const GSC_ACCOUNT = 'https://thehousepainters.co.nz/';
+  const ENDPOINT    = 'https://connectors.windsor.ai/searchconsole';
+
+  let currentRange     = 7;
+  let allKeywords      = [];
+  let currentZone      = 'all';
+  let sortCfg          = { field: 'clicks', dir: 'desc' };
+
+  // ── Date builders ──────────────────────────────────────────
+  function buildDates(days, offsetDays = 0) {
+    const to = new Date();
+    to.setDate(to.getDate() - 1 - offsetDays);
+    const from = new Date(to);
+    from.setDate(from.getDate() - (days - 1));
+    return { date_from: toISODate(from), date_to: toISODate(to) };
   }
-  return { init };
+
+  // ── Windsor fetch ─────────────────────────────────────────
+  async function fetchGSC(fields, dates) {
+    const key = AppConfig.get('WINDSOR_API_KEY');
+    if (!key) throw new Error('Windsor.ai API key required — add in Settings.');
+    const p = new URLSearchParams({
+      api_key:  key,
+      accounts: GSC_ACCOUNT,
+      fields:   fields.join(','),
+      ...dates,
+    });
+    const res = await fetch(`${ENDPOINT}?${p}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Windsor GSC ${res.status}: ${body}`);
+    }
+    const json = await res.json();
+    return json.result || [];
+  }
+
+  // ── Aggregation ───────────────────────────────────────────
+  function aggregateByQuery(rows) {
+    const map = {};
+    rows.forEach(r => {
+      if (!r.query) return;
+      if (!map[r.query]) map[r.query] = { clicks: 0, impressions: 0, posSum: 0, count: 0 };
+      const m = map[r.query];
+      m.clicks      += r.clicks      || 0;
+      m.impressions += r.impressions || 0;
+      m.posSum      += r.position    || 0;
+      m.count++;
+    });
+    return Object.entries(map).map(([q, m]) => ({
+      query:       q,
+      clicks:      m.clicks,
+      impressions: m.impressions,
+      ctr:         m.impressions > 0 ? m.clicks / m.impressions : 0,
+      position:    m.count > 0 ? m.posSum / m.count : 99,
+    }));
+  }
+
+  function buildPrevMap(rows) {
+    const map = {};
+    rows.forEach(r => {
+      if (!r.query) return;
+      if (!map[r.query]) map[r.query] = { sum: 0, n: 0 };
+      map[r.query].sum += r.position || 0;
+      map[r.query].n++;
+    });
+    const out = {};
+    Object.entries(map).forEach(([q, v]) => { out[q] = v.n > 0 ? v.sum / v.n : 0; });
+    return out;
+  }
+
+  // ── Zone helpers ──────────────────────────────────────────
+  function getZone(pos) {
+    if (pos <= 5)  return 'win';
+    if (pos <= 20) return 'opportunity';
+    if (pos <= 50) return 'dead';
+    return 'beyond';
+  }
+
+  function zoneBadge(pos) {
+    const z = getZone(pos);
+    const cfg = {
+      win:         { label: 'P1 WIN',      cls: 'badge--green' },
+      opportunity: { label: 'OPPORTUNITY', cls: 'badge--amber' },
+      dead:        { label: 'DEAD ZONE',   cls: 'badge--red'   },
+      beyond:      { label: 'P5+',         cls: 'badge--grey'  },
+    };
+    return `<span class="badge ${cfg[z].cls}">${cfg[z].label}</span>`;
+  }
+
+  function posChangeBadge(change) {
+    if (!change || Math.abs(change) < 0.5) return '<span class="text-muted">—</span>';
+    // Positive change = position number decreased = improved
+    if (change > 0) return `<span class="pos-up">↑${Math.abs(change).toFixed(0)}</span>`;
+    return `<span class="pos-down">↓${Math.abs(change).toFixed(0)}</span>`;
+  }
+
+  // ── Render: summary cards ─────────────────────────────────
+  function renderSummaryCards(keywords) {
+    const totalClicks       = keywords.reduce((s, r) => s + r.clicks, 0);
+    const totalImpressions  = keywords.reduce((s, r) => s + r.impressions, 0);
+    const avgCTR            = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+    const avgPos            = keywords.length > 0
+      ? keywords.reduce((s, r) => s + r.position, 0) / keywords.length : 0;
+    const page1Count        = keywords.filter(k => k.position <= 5).length;
+    const oppCount          = keywords.filter(k => k.position > 5  && k.position <= 20).length;
+    const deadCount         = keywords.filter(k => k.position > 20 && k.position <= 50).length;
+
+    setText('seoTotalClicks',      formatNumber(totalClicks));
+    setText('seoTotalImpressions', formatNumber(totalImpressions));
+    setText('seoAvgCTR',           avgCTR.toFixed(2) + '%');
+    setText('seoAvgPosition',      avgPos.toFixed(1));
+    setText('seoPage1Count',       page1Count);
+    setText('seoOppCount',         oppCount);
+    setText('seoDeadCount',        deadCount);
+    setText('seoKeywordCount',     `${keywords.length} keywords`);
+  }
+
+  // ── Render: alerts panel ──────────────────────────────────
+  function renderAlerts(keywords) {
+    const panel = document.getElementById('seoAlertPanel');
+    const list  = document.getElementById('seoAlertList');
+    if (!panel || !list) return;
+
+    const alerts = [];
+    keywords.forEach(kw => {
+      if (kw.prevPos && kw.posChange < -3) {
+        alerts.push(
+          `<div class="alert-item">
+            <span class="alert-bullet">●</span>
+            <strong>"${esc(kw.query)}"</strong> dropped
+            ${Math.abs(kw.posChange).toFixed(0)} positions —
+            was #${Math.round(kw.prevPos)}, now <strong>#${Math.round(kw.position)}</strong>
+          </div>`
+        );
+      }
+      if (kw.prevPos && kw.prevPos <= 10 && kw.position > 10) {
+        alerts.push(
+          `<div class="alert-item alert-item--critical">
+            <span class="alert-bullet">🔴</span>
+            <strong>"${esc(kw.query)}"</strong> FELL OFF PAGE 1 —
+            was #${Math.round(kw.prevPos)}, now #${Math.round(kw.position)}
+          </div>`
+        );
+      }
+    });
+
+    if (alerts.length) {
+      list.innerHTML = alerts.join('');
+      panel.style.display = 'block';
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+
+  // ── Render: keyword table ─────────────────────────────────
+  function renderKeywordTable() {
+    const tbody = document.getElementById('seoKeywordsTableBody');
+    if (!tbody) return;
+
+    let data = [...allKeywords];
+    if (currentZone === 'win')         data = data.filter(k => k.position <= 5);
+    else if (currentZone === 'opportunity') data = data.filter(k => k.position > 5  && k.position <= 20);
+    else if (currentZone === 'dead')    data = data.filter(k => k.position > 20 && k.position <= 50);
+
+    data.sort((a, b) => {
+      const av = a[sortCfg.field] ?? 0;
+      const bv = b[sortCfg.field] ?? 0;
+      return sortCfg.dir === 'desc' ? bv - av : av - bv;
+    });
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No keywords in this zone.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(kw => `
+      <tr>
+        <td class="td-keyword">${esc(kw.query)}</td>
+        <td class="td-number"><strong>${Math.round(kw.position)}</strong></td>
+        <td class="td-center">${posChangeBadge(kw.posChange)}</td>
+        <td>${zoneBadge(kw.position)}</td>
+        <td class="td-number">${formatNumber(kw.clicks)}</td>
+        <td class="td-number">${formatNumber(kw.impressions)}</td>
+        <td class="td-number">${(kw.ctr * 100).toFixed(1)}%</td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Render: page performance table ───────────────────────
+  function renderPageTable(pages) {
+    const tbody = document.getElementById('seoPagesTableBody');
+    if (!tbody) return;
+
+    const sorted = [...pages]
+      .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
+      .slice(0, 40);
+
+    tbody.innerHTML = sorted.map(pg => {
+      const path = pg.page.replace('https://thehousepainters.co.nz', '') || '/';
+      const flagLow = pg.position <= 20 && (pg.ctr * 100) < 2 && pg.impressions >= 50;
+      return `
+        <tr${flagLow ? ' class="row-amber"' : ''}>
+          <td class="td-url">
+            <a href="${esc(pg.page)}" target="_blank" rel="noopener"
+               title="${esc(pg.page)}">${esc(path)}</a>
+          </td>
+          <td class="td-number">${formatNumber(pg.clicks)}</td>
+          <td class="td-number">${formatNumber(pg.impressions)}</td>
+          <td class="td-number${flagLow ? ' text-amber' : ''}">${(pg.ctr * 100).toFixed(1)}%</td>
+          <td class="td-number">${pg.position.toFixed(1)}</td>
+          <td>${zoneBadge(pg.position)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── Load data ─────────────────────────────────────────────
+  async function loadSEO() {
+    showLoading(true);
+    try {
+      const currDates = buildDates(currentRange);
+      const prevDates = buildDates(currentRange, currentRange);
+
+      const [kwCurr, kwPrev, pgRaw] = await Promise.all([
+        fetchGSC(['query', 'clicks', 'impressions', 'ctr', 'position'], currDates),
+        fetchGSC(['query', 'position'], prevDates),
+        fetchGSC(['page', 'clicks', 'impressions', 'ctr', 'position'], currDates),
+      ]);
+
+      const prevMap = buildPrevMap(kwPrev);
+      allKeywords = aggregateByQuery(kwCurr).map(kw => ({
+        ...kw,
+        prevPos:   prevMap[kw.query] || null,
+        posChange: prevMap[kw.query] ? prevMap[kw.query] - kw.position : 0,
+        // positive posChange = position improved (lower number)
+      }));
+
+      const pages = pgRaw.map(pg => ({
+        page:        pg.page,
+        clicks:      pg.clicks      || 0,
+        impressions: pg.impressions || 0,
+        ctr:         pg.ctr         || 0,
+        position:    pg.position    || 99,
+      }));
+
+      renderSummaryCards(allKeywords);
+      renderAlerts(allKeywords);
+      renderKeywordTable();
+      renderPageTable(pages);
+      setText('seoLastUpdated', `Last updated: ${timestampNow()}`);
+    } catch (err) {
+      showToast('SEO Error: ' + err.message, 5000);
+      console.error('[SEO]', err);
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function showLoading(on) {
+    const spin    = document.getElementById('seoLoading');
+    const content = document.getElementById('seoContent');
+    if (spin)    spin.style.display    = on ? 'flex' : 'none';
+    if (content) content.style.display = on ? 'none'  : 'block';
+  }
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  function init() {
+    // Date selector
+    document.getElementById('seoDateSelector')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-range]');
+      if (!btn) return;
+      document.querySelectorAll('#seoDateSelector .date-btn')
+        .forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRange = parseInt(btn.dataset.range) || 7;
+      loadSEO();
+    });
+
+    // Refresh
+    document.getElementById('seoRefreshBtn')?.addEventListener('click', loadSEO);
+
+    // Zone filter
+    document.getElementById('seoZoneFilter')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-zone]');
+      if (!btn) return;
+      document.querySelectorAll('#seoZoneFilter .zone-btn')
+        .forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentZone = btn.dataset.zone;
+      renderKeywordTable();
+    });
+
+    // Table sort
+    document.querySelectorAll('#seoKeywordsTable th[data-sort]').forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const f = th.dataset.sort;
+        sortCfg = sortCfg.field === f
+          ? { field: f, dir: sortCfg.dir === 'desc' ? 'asc' : 'desc' }
+          : { field: f, dir: 'desc' };
+        renderKeywordTable();
+      });
+    });
+
+    // Auto-load
+    if (AppConfig.get('WINDSOR_API_KEY')) loadSEO();
+  }
+
+  return { init, loadSEO };
 })();
