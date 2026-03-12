@@ -16,6 +16,8 @@ const MetaAds = (() => {
   let tableSortKey    = 'spend';
   let tableSortDir    = 'desc';
 
+  const WAR_ROOM_STORAGE_KEY = 'rc_war_room';
+
   // ---- War Room system prompt ----
   const WAR_ROOM_SYSTEM_PROMPT = `You are a brutally honest Facebook Ads analyst. No marketing jargon. No fluff. You work for The House Painters, a house painting company in Auckland, New Zealand. Your only job is to make their ads profitable and stop them wasting money.
 
@@ -478,6 +480,46 @@ Respond with ONLY valid JSON in this exact structure:
   }
 
   // ============================================================
+  // WAR ROOM PERSISTENCE
+  // ============================================================
+  function saveWarRoom(analysis, rangeLabel, autoFallbackNote) {
+    try {
+      localStorage.setItem(WAR_ROOM_STORAGE_KEY, JSON.stringify({
+        analysis,
+        rangeLabel,
+        autoFallbackNote,
+        timestamp: timestampNow(),
+      }));
+    } catch (e) {
+      console.warn('[WarRoom] Could not save to localStorage:', e.message);
+    }
+  }
+
+  function clearSavedWarRoom() {
+    try { localStorage.removeItem(WAR_ROOM_STORAGE_KEY); } catch (_) {}
+  }
+
+  function showWarRoomCachedNote(isCached) {
+    let note = document.getElementById('wrCachedNote');
+    if (!note) {
+      note = document.createElement('p');
+      note.id = 'wrCachedNote';
+      note.style.cssText = 'font-size:0.82rem;color:var(--text-secondary);margin:0 0 1.25rem;';
+      const results = document.getElementById('warRoomResults');
+      if (results) results.prepend(note);
+    }
+    note.innerHTML = isCached
+      ? `Showing saved results from last session. <button class="btn-link" id="wrRegenBtn">↻ Run new analysis</button>`
+      : '';
+    if (isCached) {
+      document.getElementById('wrRegenBtn')?.addEventListener('click', () => {
+        clearSavedWarRoom();
+        runWarRoom();
+      });
+    }
+  }
+
+  // ============================================================
   // WAR ROOM (Tab 6)
   // ============================================================
   async function runWarRoom() {
@@ -559,6 +601,8 @@ Respond with ONLY valid JSON in this exact structure:
       const jsonStr  = jsonMatch[1] || jsonMatch[0];
       const analysis = JSON.parse(jsonStr);
       renderWarRoom(analysis);
+      saveWarRoom(analysis, rangeLabel, autoFallbackNote);
+      showWarRoomCachedNote(false);
       setText('warRoomLastUpdated', `Last analysed: ${timestampNow()} · ${rangeLabel}${autoFallbackNote}`);
 
     } catch (err) {
@@ -768,8 +812,24 @@ Respond with ONLY valid JSON in this exact structure:
     } else {
       setText('metaLastUpdated', 'Last updated: — (add Windsor.ai keys in Settings)');
     }
+
+    // Restore saved War Room so results survive hard refresh
+    try {
+      const raw = localStorage.getItem(WAR_ROOM_STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved?.analysis) {
+          renderWarRoom(saved.analysis);
+          showWarRoomCachedNote(true);
+          setText('warRoomLastUpdated',
+            `Last analysed: ${saved.timestamp} · ${saved.rangeLabel}${saved.autoFallbackNote || ''}`);
+        }
+      }
+    } catch (e) {
+      console.warn('[WarRoom] Could not restore saved analysis:', e.message);
+    }
   }
 
-  return { init, reload: loadMetaAds };
+  return { init, reload: loadMetaAds, runWarRoom };
 
 })();

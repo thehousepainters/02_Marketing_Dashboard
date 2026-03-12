@@ -1471,3 +1471,17 @@ input, select, textarea { font-family: var(--font); }
   .ap-blog-grid { grid-template-columns: 1fr; }
   .ap-section-header { flex-direction: column; }
 }
+
+/* ── Inline text-button (used for "Regenerate now" cached-results links) ── */
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: var(--green);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.btn-link:hover { color: var(--text-primary); }

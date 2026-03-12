@@ -14,6 +14,8 @@ const DailyPlan = (() => {
 
   let currentRange = 28; // Default 28 days for richer keyword signal
 
+  const STORAGE_KEY = 'rc_action_plan';
+
   // ── Date builders ──────────────────────────────────────────
   function buildDates(days) {
     const to = new Date();
@@ -435,6 +437,56 @@ Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite rea
     if (el) el.textContent = val;
   }
 
+  // ── localStorage persistence ──────────────────────────────
+  function savePlan(planA, planB) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        planA,
+        planB,
+        timestamp: timestampNow(),
+        dateRange: currentRange,
+      }));
+    } catch (e) {
+      console.warn('[ActionPlan] Could not save to localStorage:', e.message);
+    }
+  }
+
+  function clearSavedPlan() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+  }
+
+  // Shows/hides the "cached results" notice inside #apResults
+  function showRegenerateNote(isCached) {
+    let note = document.getElementById('apCachedNote');
+    if (!note) {
+      note = document.createElement('p');
+      note.id = 'apCachedNote';
+      note.style.cssText = 'font-size:0.82rem;color:var(--text-secondary);margin:0 0 1.25rem;';
+      const results = document.getElementById('apResults');
+      if (results) results.prepend(note);
+    }
+    note.innerHTML = isCached
+      ? `Showing saved results from last session. <button class="btn-link" id="apRegenBtn">↻ Regenerate now</button>`
+      : '';
+    if (isCached) {
+      document.getElementById('apRegenBtn')?.addEventListener('click', () => {
+        clearSavedPlan();
+        generatePlan();
+      });
+    }
+  }
+
+  function restorePlan(saved) {
+    renderSummary(saved.planA.summary || '');
+    renderBlogPosts(saved.planA.blog_posts || []);
+    renderQuickWins(saved.planB.quick_wins || []);
+    renderPageFixes(saved.planB.page_fixes || []);
+    renderContentUpdates(saved.planB.content_updates || []);
+    setState('results');
+    setText('apLastUpdated', `Last generated: ${saved.timestamp} · ${saved.dateRange}-day window`);
+    showRegenerateNote(true);
+  }
+
   // ── Main: Generate plan ───────────────────────────────────
   async function generatePlan() {
     if (!AppConfig.get('WINDSOR_API_KEY')) {
@@ -503,8 +555,12 @@ Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite rea
     renderPageFixes(planB.page_fixes || []);
     renderContentUpdates(planB.content_updates || []);
 
+    // Persist so results survive hard refresh
+    savePlan(planA, planB);
+
     setState('results');
-    setText('apLastUpdated', `Last generated: ${timestampNow()}`);
+    setText('apLastUpdated', `Last generated: ${timestampNow()} · ${currentRange}-day window`);
+    showRegenerateNote(false);
   }
 
   // ── Init ──────────────────────────────────────────────────
@@ -519,6 +575,20 @@ Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite rea
       btn.classList.add('active');
       currentRange = parseInt(btn.dataset.range) || 28;
     });
+
+    // Restore saved plan so results survive hard refresh
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved?.planA && saved?.planB) {
+          restorePlan(saved);
+          return; // skip idle state
+        }
+      }
+    } catch (e) {
+      console.warn('[ActionPlan] Could not restore saved plan:', e.message);
+    }
   }
 
   return { init, generatePlan };
