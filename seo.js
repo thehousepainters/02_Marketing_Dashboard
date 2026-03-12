@@ -40,9 +40,7 @@ const SEO = (() => {
       throw new Error(`Windsor GSC ${res.status}: ${body.slice(0, 200)}`);
     }
     const json = await res.json();
-    const rows = json.result || [];
-    console.log('[SEO debug] fields=' + fields[0] + ' key=' + key.slice(0,8) + '… rows=' + rows.length + ' status=' + res.status);
-    return rows;
+    return json.data || json.result || [];
   }
 
   // ── Aggregation ───────────────────────────────────────────
