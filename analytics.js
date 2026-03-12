@@ -145,17 +145,28 @@ const Analytics = (() => {
       `${formatNumber(t.convForm)} forms · ${formatNumber(t.convPhone)} calls · ${formatNumber(t.convQuote)} quotes`);
   }
 
-  // ── Render: alerts ────────────────────────────────────────
+  // ── Render: alerts (collapsible) ─────────────────────────
   function renderAlerts(pages, totals) {
     const panel = document.getElementById('anaAlertPanel');
     const list  = document.getElementById('anaAlertList');
     if (!panel || !list) return;
 
-    const alerts = [];
+    const critical = [];
+    const warnings = [];
+
+    if (totals.totalConversions === 0 && totals.sessions > 20) {
+      critical.push(
+        `<div class="alert-item alert-item--critical">
+          <span class="alert-bullet">🔴</span>
+          <strong>Zero conversions</strong> across ${formatNumber(totals.sessions)} sessions —
+          check contact forms and phone call tracking.
+        </div>`
+      );
+    }
 
     pages.forEach(pg => {
       if (pg.sessions >= 10 && pg.convRate < 2) {
-        alerts.push(
+        warnings.push(
           `<div class="alert-item">
             <span class="alert-bullet">●</span>
             <strong>${esc(pg.page_path)}</strong> — ${formatNumber(pg.sessions)} sessions,
@@ -164,7 +175,7 @@ const Analytics = (() => {
         );
       }
       if (pg.sessions >= 5 && pg.bounceRate > 70) {
-        alerts.push(
+        warnings.push(
           `<div class="alert-item">
             <span class="alert-bullet">●</span>
             <strong>${esc(pg.page_path)}</strong> — <strong>${pg.bounceRate.toFixed(0)}% bounce rate</strong>
@@ -174,22 +185,37 @@ const Analytics = (() => {
       }
     });
 
-    if (totals.totalConversions === 0 && totals.sessions > 20) {
-      alerts.push(
-        `<div class="alert-item alert-item--critical">
-          <span class="alert-bullet">🔴</span>
-          <strong>Zero conversions</strong> across ${formatNumber(totals.sessions)} sessions —
-          check contact forms and phone call tracking.
-        </div>`
-      );
+    const total = critical.length + warnings.length;
+    if (!total) { panel.style.display = 'none'; return; }
+
+    // Build summary line
+    const parts = [];
+    if (critical.length) parts.push(`${critical.length} critical`);
+    if (warnings.length) parts.push(`${warnings.length} page issue${warnings.length > 1 ? 's' : ''}`);
+    const summary = parts.join(' · ');
+
+    // Inject collapsible header if not already present
+    let header = panel.querySelector('.alert-header');
+    if (!header) {
+      header = document.createElement('div');
+      header.className = 'alert-header';
+      panel.insertBefore(header, list);
+      header.addEventListener('click', () => {
+        const open = list.style.display !== 'none';
+        list.style.display = open ? 'none' : 'block';
+        header.querySelector('.alert-toggle').textContent = open ? '▼ View details' : '▲ Hide details';
+      });
     }
 
-    if (alerts.length) {
-      list.innerHTML = alerts.join('');
-      panel.style.display = 'block';
-    } else {
-      panel.style.display = 'none';
-    }
+    header.innerHTML = `
+      <span class="alert-header-icon">⚠</span>
+      <span class="alert-header-text">Urgent — ${esc(summary)}</span>
+      <button class="alert-toggle">▼ View details</button>
+    `;
+
+    list.innerHTML = [...critical, ...warnings].join('');
+    list.style.display = 'none'; // collapsed by default
+    panel.style.display = 'block';
   }
 
   // ── Render: traffic channels ──────────────────────────────
