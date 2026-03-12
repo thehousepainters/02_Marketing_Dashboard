@@ -317,13 +317,13 @@ img { max-width: 100%; }
 }
 .cards-grid--3 { grid-template-columns: repeat(3, 1fr); }
 .cards-grid--4 { grid-template-columns: repeat(4, 1fr); }
-.cards-grid--6 { grid-template-columns: repeat(3, 1fr); }
+.cards-grid--6 { grid-template-columns: repeat(6, 1fr); }
 
 .metric-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-xl);
+  padding: 1rem 1.25rem;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
@@ -1227,8 +1227,58 @@ img { max-width: 100%; }
 @media (max-width: 480px) {
   .cards-grid--3,
   .cards-grid--4,
-  .cards-grid--6 { grid-template-columns: 1fr; }
+  .cards-grid--6 { grid-template-columns: 1fr 1fr; }
   .ds-metrics-grid { grid-template-columns: 1fr 1fr; }
   .tab-header-actions { width: 100%; }
   .date-selector { width: 100%; }
+}
+
+/* ============================================================
+   METRIC CARD TEXT — aliases used by the actual HTML
+   ============================================================ */
+.metric-card .metric-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+.metric-card .metric-value {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.metric-card .metric-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ============================================================
+   CHART CONTAINERS
+   ============================================================ */
+.chart-container {
+  position: relative;
+  height: 240px;
+}
+.chart-container--short {
+  position: relative;
+  height: 160px;
+}
+
+/* ============================================================
+   RESPONSIVE OVERRIDES — metric grid collapse
+   ============================================================ */
+@media (max-width: 1200px) {
+  .cards-grid--6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .cards-grid--6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .cards-grid--6 { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid--3 { grid-template-columns: repeat(2, 1fr); }
 }
