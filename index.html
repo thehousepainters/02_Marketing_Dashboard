@@ -704,18 +704,62 @@
       <div class="tab-header">
         <div>
           <h1 class="tab-title">Market Domination Score</h1>
-          <p class="tab-subtitle">Overall Auckland painting market performance</p>
+          <p class="tab-subtitle">Composite 0–100 score across SEO, Rankings, Momentum, Ads &amp; Content</p>
         </div>
+        <button class="btn btn--primary" id="dsRunBtn">⚡ Calculate Score</button>
       </div>
-      <p class="last-updated">Last updated: —</p>
+      <p class="last-updated" id="dsLastUpdated">Last scored: —</p>
 
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Domination Score</h3></div>
-        <div class="coming-soon">
-          <div class="coming-soon__icon">🏆</div>
-          <p class="coming-soon__title">Market Domination Score — Coming in Section 4</p>
-          <p class="coming-soon__text">Composite score out of 100 covering SEO, Content, Ads, Analytics, and Competitor position. Requires all data sources connected.</p>
+      <!-- Loading -->
+      <div id="dsLoading" class="ai-thinking" style="display:none">
+        <div class="ai-thinking__spinner"></div>
+        <p class="ai-thinking__text">Pulling data from all sources…</p>
+      </div>
+
+      <!-- Error -->
+      <div id="dsError" class="card" style="display:none;padding:1.5rem">
+        <p class="text-muted" id="dsErrorMsg"></p>
+      </div>
+
+      <!-- Results -->
+      <div id="dsResults" style="display:none">
+
+        <!-- Row 1: Gauge + Pillar breakdown -->
+        <div class="ds-main-grid">
+
+          <!-- Gauge card -->
+          <div class="card ds-gauge-card">
+            <svg id="dsGaugeSvg" class="ds-gauge-svg" viewBox="0 0 120 105"></svg>
+            <div id="dsScoreBand" class="ds-score-band"></div>
+            <div class="ds-band-legend">
+              <span class="ds-legend-item ds-legend-item--green">80+ Dominating</span>
+              <span class="ds-legend-item ds-legend-item--amber">60 Competitive</span>
+              <span class="ds-legend-item ds-legend-item--orange">40 Building</span>
+              <span class="ds-legend-item ds-legend-item--red">0 Struggling</span>
+            </div>
+          </div>
+
+          <!-- Pillar bars card -->
+          <div class="card ds-pillars-card">
+            <h3 class="card-title" style="margin-bottom:1.25rem">Score Breakdown</h3>
+            <div id="dsPillars"></div>
+          </div>
+
         </div>
+
+        <!-- Row 2: Key metrics strip -->
+        <div class="card" style="margin-top:1rem;padding:1.25rem">
+          <h3 class="card-title" style="margin-bottom:1rem">Key Metrics</h3>
+          <div class="ds-metrics-grid" id="dsMetricsGrid"></div>
+        </div>
+
+        <!-- Row 3: What to focus on -->
+        <div class="card" style="margin-top:1rem;padding:1.25rem">
+          <h3 class="card-title" style="margin-bottom:0.5rem">What To Focus On</h3>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">Your 2 biggest opportunities + your strongest area to protect</p>
+          <div id="dsInsights"></div>
+        </div>
+
       </div>
     </div>
 

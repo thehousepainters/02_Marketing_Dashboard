@@ -1485,3 +1485,186 @@ input, select, textarea { font-family: var(--font); }
   text-underline-offset: 2px;
 }
 .btn-link:hover { color: var(--text-primary); }
+
+/* ============================================================
+   DOMINATION SCORE (Tab 8)
+   ============================================================ */
+
+/* Main two-column layout: gauge left, pillars right */
+.ds-main-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Gauge card */
+.ds-gauge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem 1.25rem;
+  gap: 0.75rem;
+}
+.ds-gauge-svg {
+  width: 180px;
+  height: 158px;
+  display: block;
+}
+
+/* Score band label (e.g. "60–79 · Competitive") */
+.ds-score-band {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  letter-spacing: 0.01em;
+}
+.ds-band--green  { background: var(--green-light);  color: var(--green-dark); }
+.ds-band--amber  { background: var(--amber-light);  color: #92400e; }
+.ds-band--orange { background: #ffedd5;             color: #9a3412; }
+.ds-band--red    { background: var(--red-light);    color: #991b1b; }
+
+/* Mini legend below band */
+.ds-band-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 0.5rem;
+  margin-top: 0.25rem;
+}
+.ds-legend-item {
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.15rem 0.45rem;
+  border-radius: 10px;
+}
+.ds-legend-item--green  { background: var(--green-light);  color: var(--green-dark); }
+.ds-legend-item--amber  { background: var(--amber-light);  color: #92400e; }
+.ds-legend-item--orange { background: #ffedd5;             color: #9a3412; }
+.ds-legend-item--red    { background: var(--red-light);    color: #991b1b; }
+
+/* Pillars card */
+.ds-pillars-card { padding: 1.5rem; }
+
+.ds-pillar { margin-bottom: 1.1rem; }
+.ds-pillar:last-child { margin-bottom: 0; }
+
+.ds-pillar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+.ds-pillar-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ds-pillar-nodata {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: 0.4rem;
+}
+.ds-pillar-score {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.ds-pillar-max {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.ds-pillar-track {
+  height: 7px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+.ds-pillar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ds-pillar-insight {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Key metrics grid */
+.ds-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+.ds-metric {
+  text-align: center;
+  padding: 0.85rem 0.5rem;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.ds-metric-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  word-break: break-all;
+}
+.ds-metric-label {
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+.ds-metric-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* Insights */
+.ds-insight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.ds-insight-row:last-child { border-bottom: none; }
+.ds-insight-row--keep {
+  background: #f0fdf4;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  border-bottom: none;
+  margin-top: 0.25rem;
+}
+.ds-insight-badge {
+  flex-shrink: 0;
+  padding: 0.28rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.ds-insight-badge--keep {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+.ds-insight-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Responsive */
+@media (max-width: 780px) {
+  .ds-main-grid { grid-template-columns: 1fr; }
+  .ds-gauge-card { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .ds-metrics-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
