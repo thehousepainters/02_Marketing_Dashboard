@@ -1282,3 +1282,191 @@ img { max-width: 100%; }
   .cards-grid--6 { grid-template-columns: repeat(2, 1fr); }
   .cards-grid--3 { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================================
+   BUTTON FIXES — ensure standalone classes have flex layout
+   ============================================================ */
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn--primary,
+.btn--secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+  font-family: var(--font);
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary,
+.btn--primary {
+  background: var(--brand);
+  color: #fff;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
+  padding: 0.5625rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.btn-primary:hover,
+.btn--primary:hover  { background: var(--brand-dark); border-color: var(--brand-dark); }
+.btn-primary:disabled,
+.btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary,
+.btn--secondary {
+  background: var(--bg-card);
+  color: var(--gray-700);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5625rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.btn-secondary:hover,
+.btn--secondary:hover { background: var(--gray-50); color: var(--gray-900); border-color: var(--gray-300); }
+
+.btn-sm,
+.btn--sm {
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+}
+
+/* ============================================================
+   ANALYTICS — Channel & Device rows
+   ============================================================ */
+.channel-list,
+.device-list {
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.channel-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 60px 52px 80px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.1s;
+}
+.channel-row:last-child { border-bottom: none; }
+.channel-row:hover { background: var(--gray-50); }
+
+.channel-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.channel-bar-wrap {
+  height: 6px;
+  background: var(--gray-100);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.channel-bar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+.channel-stat {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.device-row {
+  display: grid;
+  grid-template-columns: 28px 80px 1fr 110px 44px 80px;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.1s;
+}
+.device-row:last-child { border-bottom: none; }
+.device-row:hover { background: var(--gray-50); }
+
+.device-icon  { font-size: 1rem; text-align: center; }
+.device-name  { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-transform: capitalize; }
+.device-bar-wrap {
+  height: 6px;
+  background: var(--gray-100);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.device-bar {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+.device-sessions,
+.device-pct,
+.device-conv {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   ANALYTICS — Table row states & cells
+   ============================================================ */
+.data-table tbody tr.row-red   { background: #fff8f8; }
+.data-table tbody tr.row-amber { background: #fffdf4; }
+.data-table tbody tr.row-red:hover   { background: #fee4e2; }
+.data-table tbody tr.row-amber:hover { background: #fef0c7; }
+.td-url    { font-size: 0.8125rem; color: var(--text-secondary); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-number { font-variant-numeric: tabular-nums; text-align: right; font-size: 0.875rem; }
+.text-amber { color: var(--amber) !important; }
+
+/* ============================================================
+   ANALYTICS — Alert items
+   ============================================================ */
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-100);
+}
+.alert-item:last-child { border-bottom: none; }
+.alert-item--critical { color: var(--red); font-weight: 500; }
+.alert-bullet { flex-shrink: 0; }
+.alert-toggle {
+  background: none; border: none; color: var(--brand);
+  font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+  padding: 0; margin-left: auto;
+}
+
+/* ============================================================
+   SEO — zone filter tabs (padding fix)
+   ============================================================ */
+.zone-filter {
+  padding: 0.75rem 1.25rem 0;
+  margin-bottom: 0;
+}
+.zone-btn { font-family: var(--font); }
+
+/* ============================================================
+   GENERAL — consistent card inner padding
+   ============================================================ */
+.card .table-wrapper { margin: 0 -1px -1px; }
+
+@media (max-width: 900px) {
+  .channel-row  { grid-template-columns: 110px 1fr 52px 70px; }
+  .channel-row .channel-stat:last-child { display: none; }
+  .device-row   { grid-template-columns: 28px 70px 1fr 44px 70px; }
+  .device-row .device-sessions { display: none; }
+}
