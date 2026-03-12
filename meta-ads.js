@@ -271,21 +271,25 @@ Respond with ONLY valid JSON in this exact structure:
             {
               label: 'Spend (NZD)',
               data: byDate.map(d => d.spend),
-              borderColor: '#111827',
-              backgroundColor: 'rgba(17,24,39,0.05)',
+              borderColor: '#465fff',
+              backgroundColor: 'rgba(70,95,255,0.08)',
               fill: true,
-              tension: 0.3,
+              tension: 0.4,
               pointRadius: 3,
+              pointBackgroundColor: '#465fff',
+              borderWidth: 2,
               yAxisID: 'ySpend',
             },
             {
               label: 'Leads',
               data: byDate.map(d => d.leads),
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16,185,129,0.08)',
+              borderColor: '#17b26a',
+              backgroundColor: 'rgba(23,178,106,0.08)',
               fill: true,
-              tension: 0.3,
+              tension: 0.4,
               pointRadius: 3,
+              pointBackgroundColor: '#17b26a',
+              borderWidth: 2,
               yAxisID: 'yLeads',
             },
           ],
@@ -293,10 +297,26 @@ Respond with ONLY valid JSON in this exact structure:
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: true, position: 'top' } },
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'top' },
+            tooltip: { padding: 10, cornerRadius: 8 },
+          },
           scales: {
-            ySpend: { type: 'linear', position: 'left', grid: { color: '#f1f5f9' } },
-            yLeads: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } },
+            x: { grid: { color: '#f1f5f9' } },
+            ySpend: {
+              type: 'linear', position: 'left',
+              min: 0,
+              grid: { color: '#f1f5f9' },
+              ticks: { callback: v => '$' + v },
+            },
+            yLeads: {
+              type: 'linear', position: 'right',
+              min: 0,
+              suggestedMax: 5,
+              ticks: { stepSize: 1, precision: 0 },
+              grid: { drawOnChartArea: false },
+            },
           },
         },
       });
@@ -314,10 +334,10 @@ Respond with ONLY valid JSON in this exact structure:
             label: 'CPL (NZD)',
             data: byCampaign.map(c => c.cpl),
             backgroundColor: byCampaign.map(c =>
-              c.cpl > cfg.CPL_ALERT_THRESHOLD ? '#ef4444' :
-              c.cpl < cfg.CPL_ALERT_THRESHOLD * 0.7 ? '#10b981' : '#f59e0b'
+              c.cpl > cfg.CPL_ALERT_THRESHOLD ? '#f04438' :
+              c.cpl < cfg.CPL_ALERT_THRESHOLD * 0.7 ? '#17b26a' : '#f79009'
             ),
-            borderRadius: 6,
+            borderRadius: 8,
           }],
         },
         options: {
@@ -345,9 +365,9 @@ Respond with ONLY valid JSON in this exact structure:
             label: 'ROAS',
             data: byCampaign.map(c => c.roas),
             backgroundColor: byCampaign.map(c =>
-              c.roas >= 3 ? '#10b981' : c.roas >= 1 ? '#f59e0b' : '#ef4444'
+              c.roas >= 3 ? '#17b26a' : c.roas >= 1 ? '#f79009' : '#f04438'
             ),
-            borderRadius: 6,
+            borderRadius: 8,
           }],
         },
         options: {
