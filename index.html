@@ -439,18 +439,37 @@
       <div class="tab-header">
         <div>
           <h1 class="tab-title">Page Tracker</h1>
-          <p class="tab-subtitle">Monitor specific URLs over time</p>
+          <p class="tab-subtitle">Individual page performance · Google Search Console</p>
         </div>
-        <button class="btn-primary" id="addPageBtn">+ Add Page</button>
+        <div class="tab-controls">
+          <div class="date-selector" id="ptDateSelector">
+            <button class="date-btn active" data-range="7">Last 7 days</button>
+            <button class="date-btn" data-range="28">Last 28 days</button>
+            <button class="date-btn" data-range="90">Last 90 days</button>
+          </div>
+          <button class="btn-secondary" id="ptRefreshBtn">↻ Refresh</button>
+        </div>
       </div>
-      <p class="last-updated">Last updated: —</p>
+      <p class="last-updated" id="ptLastUpdated">Last updated: —</p>
 
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Tracked Pages</h3></div>
-        <div class="coming-soon">
-          <div class="coming-soon__icon">📄</div>
-          <p class="coming-soon__title">Page Tracker — Coming in Section 3</p>
-          <p class="coming-soon__text">Track individual URLs and watch their rankings, traffic, and conversions grow day by day. Requires GSC + GA4 credentials.</p>
+      <!-- Loading spinner -->
+      <div id="ptLoading" style="display:none">
+        <div class="ai-thinking">
+          <div class="ai-spinner"></div>
+          <p class="ai-thinking__text">Loading page data from Windsor.ai…</p>
+        </div>
+      </div>
+
+      <!-- Main content — populated by page-tracker.js -->
+      <div id="ptContent">
+        <div id="ptPagesList">
+          <div class="card">
+            <div class="coming-soon">
+              <div class="coming-soon__icon">📄</div>
+              <p class="coming-soon__title">Configure Windsor.ai to load page data</p>
+              <p class="coming-soon__text">Add your Windsor.ai API key in Settings to start tracking individual page performance from Google Search Console.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1093,3 +1093,148 @@ input, select, textarea { font-family: var(--font); }
   .device-row { grid-template-columns: 28px 60px 1fr 40px 70px; }
   .device-row .device-conv { display: none; }
 }
+
+/* ============================================================
+   PAGE TRACKER (Tab 4)
+   ============================================================ */
+
+/* Summary strip — aggregate metrics across all tracked pages */
+.pt-summary-strip {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.pt-summary-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 120px;
+  box-shadow: var(--shadow-sm);
+}
+.pt-summary-item--warn {
+  border-color: var(--amber);
+  background: var(--amber-light);
+}
+.pt-summary-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.pt-summary-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Individual page card */
+.pt-card {
+  margin-bottom: 1.25rem;
+}
+.pt-card--empty {
+  opacity: 0.65;
+}
+.pt-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.75rem;
+  flex-wrap: wrap;
+}
+.pt-url-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+.pt-url {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+.pt-url:hover { text-decoration: underline; color: var(--blue); }
+.pt-full-url {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  word-break: break-all;
+  max-width: 60%;
+  text-align: right;
+}
+
+/* 4-column metrics grid inside each page card */
+.pt-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+.pt-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.pt-metric:last-child { border-right: none; }
+.pt-metric-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.pt-metric-change {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-height: 1.2em;
+}
+.pt-metric-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Keyword mini-table inside each page card */
+.pt-keywords {
+  border-top: 1px solid var(--border);
+  padding: 0.75rem 0 0;
+}
+.pt-keywords-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  padding: 0 1.25rem 0.5rem;
+}
+
+/* Compact table variant — smaller row height for keyword lists */
+.data-table--compact th,
+.data-table--compact td {
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+}
+.data-table--compact th {
+  font-size: 0.7rem;
+}
+
+/* Responsive: stack metric grid to 2×2 on small screens */
+@media (max-width: 600px) {
+  .pt-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .pt-metric:nth-child(2) { border-right: none; }
+  .pt-metric:nth-child(3) { border-top: 1px solid var(--border); }
+  .pt-metric:nth-child(4) { border-top: 1px solid var(--border); }
+  .pt-full-url { display: none; }
+  .pt-summary-strip { flex-direction: column; }
+}
