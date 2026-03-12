@@ -1488,3 +1488,172 @@ img { max-width: 100%; }
   .device-row   { grid-template-columns: 28px 70px 1fr 44px 70px; }
   .device-row .device-sessions { display: none; }
 }
+
+/* ================================================================
+   TAILADMIN DESIGN REFRESH v2
+   Top bar · Segmented selector · Card polish · Metric accents
+   ================================================================ */
+
+/* ── 1. Desktop top bar — always visible ──────────────────────── */
+.top-bar {
+  display: flex;                   /* override display:none base rule */
+  left: var(--sidebar-width);      /* sits right of fixed sidebar */
+  padding: 0 1.5rem;
+}
+.sidebar {
+  top: var(--top-bar-h);
+  height: calc(100vh - var(--top-bar-h));
+}
+.main-content {
+  padding-top: calc(var(--top-bar-h) + 1.5rem);
+}
+
+/* Hamburger only needed on mobile */
+.hamburger { display: none; }
+
+/* Top bar title breadcrumb */
+.top-bar-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+/* Right side: org name + avatar */
+.top-bar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.top-bar-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.top-bar-org {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+.top-bar-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--brand);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+/* ── Mobile overrides ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .top-bar { left: 0; padding: 0 1rem; }
+  .hamburger { display: flex; }
+  .sidebar { top: 0; height: 100vh; }
+  .main-content {
+    margin-left: 0;
+    padding-top: calc(var(--top-bar-h) + 1.25rem);
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .top-bar-right { display: none; }
+}
+
+/* ── 2. Segmented date selector ───────────────────────────────── */
+.date-selector {
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+  border: none;
+}
+.date-btn {
+  border: none !important;
+  background: transparent !important;
+  color: var(--gray-500);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.375rem 0.875rem;
+  border-radius: calc(var(--radius-md) - 3px);
+  line-height: 1;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.date-btn:hover {
+  background: rgba(255,255,255,0.7) !important;
+  color: var(--text-primary);
+}
+.date-btn.active {
+  background: #fff !important;
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(16,24,40,0.10), 0 1px 2px rgba(16,24,40,0.06);
+}
+
+/* ── 3. Card radius polish ────────────────────────────────────── */
+.card {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 1px 2px rgba(16,24,40,0.04);
+}
+.metric-card {
+  border-radius: var(--radius-md);
+  padding-top: 1.375rem;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.06);
+}
+.table-wrap { border-radius: var(--radius-md); }
+.pt-page-card, .verdict-card { border-radius: var(--radius-lg); }
+
+/* ── 4. Metric card top-accent bar ───────────────────────────── */
+.metric-card {
+  position: relative;
+  overflow: hidden;
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gray-200);
+}
+.cards-grid .metric-card:nth-child(1)::before { background: var(--brand); }
+.cards-grid .metric-card:nth-child(2)::before { background: var(--green); }
+.cards-grid .metric-card:nth-child(3)::before { background: var(--amber); }
+.cards-grid .metric-card:nth-child(4)::before { background: var(--red); }
+.cards-grid .metric-card:nth-child(5)::before { background: var(--blue); }
+.cards-grid .metric-card:nth-child(6)::before { background: var(--gray-400); }
+
+/* ── 5. Metric value sizing ──────────────────────────────────── */
+.metric-card .metric-value {
+  font-size: 1.875rem !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.1 !important;
+}
+
+/* ── 6. Tab header separator ─────────────────────────────────── */
+.tab-header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.75rem;
+}
+
+/* ── 7. Card title ───────────────────────────────────────────── */
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* ── 8. Main chart height ────────────────────────────────────── */
+.chart-container { height: 300px !important; }
