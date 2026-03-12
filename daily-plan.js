@@ -191,16 +191,24 @@ const DailyPlan = (() => {
   }
 
   // ── Shared business context (prepended to both prompts) ───
-  const BIZ_CONTEXT = `You are an expert SEO strategist for The House Painters, an Auckland residential painting company.
+  // Inject today's date so Claude uses the correct year in titles and content
+  function getBizContext() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.toLocaleString('en-NZ', { month: 'long' });
+    return `You are an expert SEO strategist for The House Painters, an Auckland residential painting company.
+TODAY'S DATE: ${month} ${year}. Use ${year} (not any earlier year) in all titles, guides, and cost references.
 
 SERVICES: PRIMARY (unlimited): exterior painting, weatherboard painting/restoration, paint stripping. SECONDARY (max 20%): interior painting. NO standalone content: roof painting (carousel only).
 AUDIENCE: Auckland homeowners, property managers, real estate agents.
 LOCATION: Auckland NZ — use specific suburbs (North Shore, Remuera, Ponsonby, East Auckland, Titirangi, Devonport, Howick).
 
 Return ONLY valid JSON — no markdown fences, no text outside JSON.`;
+  }
 
   // ── Call A: Summary + Blog Posts ──────────────────────────
-  const PROMPT_A = `${BIZ_CONTEXT}
+  // Note: PROMPT_A and PROMPT_B are functions so they capture the live year
+  function PROMPT_A() { return `${getBizContext()}
 
 You will receive GSC keyword data showing opportunity keywords (positions 6–20), dead zone keywords (21–50), and keywords beyond position 50.
 
@@ -222,10 +230,10 @@ Generate a summary and blog post ideas. Return this exact JSON structure:
   ]
 }
 
-Generate exactly 6 blog posts. Prioritise exterior/weatherboard/paint-stripping. At least one must be Auckland suburb-specific. All recommendations must cite real numbers from the data.`;
+Generate exactly 6 blog posts. Prioritise exterior/weatherboard/paint-stripping. At least one must be Auckland suburb-specific. All recommendations must cite real numbers from the data.`; }
 
   // ── Call B: Quick Wins + Page Fixes + Content Updates ─────
-  const PROMPT_B = `${BIZ_CONTEXT}
+  function PROMPT_B() { return `${getBizContext()}
 
 You will receive GSC data: opportunity keywords (positions 6–20), top pages by clicks, and pages with low CTR despite good positions.
 
@@ -258,7 +266,7 @@ Generate quick wins, page fixes, and content updates. Return this exact JSON str
   ]
 }
 
-Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite real data numbers.`;
+Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite real data numbers.`; }
 
   // ── Escape helper ─────────────────────────────────────────
   function esc(str) {
@@ -467,8 +475,8 @@ Generate 6 quick wins, 4 page fixes, 3 content updates. Every item must cite rea
     let planA, planB;
     try {
       const [rawA, rawB] = await Promise.all([
-        callClaude(PROMPT_A, JSON.stringify(payloadA, null, 2)),
-        callClaude(PROMPT_B, JSON.stringify(payloadB, null, 2)),
+        callClaude(PROMPT_A(), JSON.stringify(payloadA, null, 2)),
+        callClaude(PROMPT_B(), JSON.stringify(payloadB, null, 2)),
       ]);
 
       try { planA = extractJSON(rawA); }
