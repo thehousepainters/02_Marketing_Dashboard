@@ -246,7 +246,7 @@ img { max-width: 100%; }
   flex: 1;
   min-height: 100vh;
   background: var(--bg-page);
-  padding: 1.75rem 1.5rem;
+  padding: 1.5rem;
   min-width: 0;
 }
 
@@ -265,7 +265,7 @@ img { max-width: 100%; }
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 .tab-header h1 {
   font-size: 1.375rem;
@@ -312,8 +312,8 @@ img { max-width: 100%; }
    ============================================================ */
 .cards-grid {
   display: grid;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 .cards-grid--3 { grid-template-columns: repeat(3, 1fr); }
 .cards-grid--4 { grid-template-columns: repeat(4, 1fr); }
@@ -635,15 +635,33 @@ img { max-width: 100%; }
 .last-updated {
   font-size: 0.8125rem;
   color: var(--text-muted);
+  margin-bottom: 1.25rem;
 }
 
 /* ============================================================
    DIVIDERS & SPACING
    ============================================================ */
-.section-gap { margin-bottom: 1.25rem; }
-.row-gap { display: flex; flex-direction: column; gap: 1.25rem; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+.section-gap { margin-bottom: 1.5rem; }
+.row-gap { display: flex; flex-direction: column; gap: 1.5rem; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+/* Every direct .card inside a tab panel gets bottom spacing */
+.tab-panel > .card,
+.tab-panel > .cards-grid,
+.tab-panel > .two-col,
+.tab-panel > .three-col,
+.tab-panel > .alerts-section,
+.tab-panel > .zone-summary-strip,
+.tab-panel > #apBlogSection,
+.tab-panel > #apQuickWinsSection,
+.tab-panel > #apPageFixesSection,
+.tab-panel > #apContentUpdatesSection {
+  margin-bottom: 1.5rem;
+}
+/* Nested cards inside two-col/three-col don't need extra bottom margin */
+.two-col > .card,
+.three-col > .card { margin-bottom: 0; }
 
 /* ============================================================
    AI THINKING STATE
