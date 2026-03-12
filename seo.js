@@ -24,7 +24,7 @@ const SEO = (() => {
   }
 
   // ── Windsor fetch ─────────────────────────────────────────
-  async function fetchGSC(fields, dates) {
+  async function fetchGSC(fields, dates, filters = null) {
     const key = AppConfig.get('WINDSOR_API_KEY');
     if (!key) throw new Error('Windsor.ai API key required — add in Settings.');
     const p = new URLSearchParams({
@@ -33,10 +33,11 @@ const SEO = (() => {
       fields:   fields.join(','),
       ...dates,
     });
+    if (filters) p.set('filters', JSON.stringify(filters));
     const res = await fetch(`${ENDPOINT}?${p}`);
     if (!res.ok) {
       const body = await res.text().catch(() => '');
-      throw new Error(`Windsor GSC ${res.status}: ${body}`);
+      throw new Error(`Windsor GSC ${res.status}: ${body.slice(0, 200)}`);
     }
     const json = await res.json();
     return json.result || [];
@@ -225,14 +226,42 @@ const SEO = (() => {
   // ── Load data ─────────────────────────────────────────────
   async function loadSEO() {
     showLoading(true);
-    try {
-      const currDates = buildDates(currentRange);
-      const prevDates = buildDates(currentRange, currentRange);
 
-      const [kwCurr, kwPrev, pgRaw] = await Promise.all([
-        fetchGSC(['query', 'clicks', 'impressions', 'ctr', 'position'], currDates),
-        fetchGSC(['query', 'position'], prevDates),
-        fetchGSC(['page', 'clicks', 'impressions', 'ctr', 'position'], currDates),
+    const currDates = buildDates(currentRange);
+    const prevDates = buildDates(currentRange, currentRange);
+    // search_type=web filter keeps only organic web results — reduces payload size
+    const webFilter = [['search_type', 'eq', 'web']];
+
+    // ── 1. Page-level fetch (always works, run first) ────────
+    let pages = [];
+    try {
+      const pgRaw = await fetchGSC(
+        ['page', 'clicks', 'impressions', 'ctr', 'position'],
+        currDates,
+        webFilter
+      );
+      pages = pgRaw.map(pg => ({
+        page:        pg.page || '',
+        clicks:      pg.clicks      || 0,
+        impressions: pg.impressions || 0,
+        ctr:         pg.ctr         || 0,
+        position:    pg.position    || 99,
+      }));
+      renderPageTable(pages);
+    } catch (err) {
+      console.error('[SEO] Page fetch failed:', err);
+      const tbody = document.getElementById('seoPagesTableBody');
+      if (tbody) tbody.innerHTML =
+        `<tr><td colspan="6" class="table-empty text-red">
+          Page data unavailable: ${esc(err.message)}
+         </td></tr>`;
+    }
+
+    // ── 2. Keyword fetches (may be large — independent try/catch) ──
+    try {
+      const [kwCurr, kwPrev] = await Promise.all([
+        fetchGSC(['query', 'clicks', 'impressions', 'ctr', 'position'], currDates, webFilter),
+        fetchGSC(['query', 'position'], prevDates, webFilter),
       ]);
 
       const prevMap = buildPrevMap(kwPrev);
@@ -240,28 +269,30 @@ const SEO = (() => {
         ...kw,
         prevPos:   prevMap[kw.query] || null,
         posChange: prevMap[kw.query] ? prevMap[kw.query] - kw.position : 0,
-        // positive posChange = position improved (lower number)
-      }));
-
-      const pages = pgRaw.map(pg => ({
-        page:        pg.page,
-        clicks:      pg.clicks      || 0,
-        impressions: pg.impressions || 0,
-        ctr:         pg.ctr         || 0,
-        position:    pg.position    || 99,
       }));
 
       renderSummaryCards(allKeywords);
       renderAlerts(allKeywords);
       renderKeywordTable();
-      renderPageTable(pages);
-      setText('seoLastUpdated', `Last updated: ${timestampNow()}`);
     } catch (err) {
-      showToast('SEO Error: ' + err.message, 5000);
-      console.error('[SEO]', err);
-    } finally {
-      showLoading(false);
+      console.error('[SEO] Keyword fetch failed:', err);
+      // Show error inline in keyword table instead of disappearing toast
+      const tbody = document.getElementById('seoKeywordsTableBody');
+      if (tbody) tbody.innerHTML =
+        `<tr><td colspan="7" class="table-empty text-red">
+          Keyword data unavailable: ${esc(err.message)}
+         </td></tr>`;
+      // Still populate summary cards from page data if we have it
+      if (pages.length) {
+        const synth = pages
+          .filter(p => p.position > 0 && p.position < 999)
+          .map(p => ({ ...p, query: p.page, posChange: 0, prevPos: null }));
+        renderSummaryCards(synth);
+      }
     }
+
+    setText('seoLastUpdated', `Last updated: ${timestampNow()}`);
+    showLoading(false);
   }
 
   // ── Helpers ───────────────────────────────────────────────
