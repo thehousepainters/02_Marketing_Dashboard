@@ -1238,3 +1238,236 @@ input, select, textarea { font-family: var(--font); }
   .pt-full-url { display: none; }
   .pt-summary-strip { flex-direction: column; }
 }
+
+/* ============================================================
+   ACTION PLAN (Tab 7)
+   ============================================================ */
+
+/* Section header — title + subtitle + optional count badge */
+.ap-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 2rem 0 1rem;
+  flex-wrap: wrap;
+}
+.ap-section-header .section-heading {
+  margin: 0 0 0.2rem;
+}
+.ap-section-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Executive summary card */
+.ap-summary-card { margin-bottom: 1.5rem; }
+.ap-summary-text {
+  padding: 0 1.25rem 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Blog Post Grid ──────────────────────────────────────── */
+.ap-blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.ap-blog-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease;
+}
+.ap-blog-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* High priority: subtle green left border */
+.ap-blog-card:has(.badge--red) {
+  border-left: 4px solid var(--red);
+}
+
+.ap-blog-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.ap-blog-badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.ap-blog-wordcount {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.ap-blog-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+.ap-blog-target {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+.ap-blog-target-label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+.ap-blog-chips {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.ap-kw-chip {
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.ap-blog-why {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  background: var(--bg-page);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+.ap-blog-outline {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+.ap-outline-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.ap-outline-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.ap-outline-list li {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.ap-blog-slug {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: 'Courier New', monospace;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+  word-break: break-all;
+}
+.ap-blog-slug-label {
+  font-family: inherit;
+  color: var(--text-muted);
+  margin-right: 0.3rem;
+}
+
+/* ── Quick Wins table ────────────────────────────────────── */
+.ap-action-cell {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-width: 200px;
+}
+
+/* ── Page Fix Cards ──────────────────────────────────────── */
+.ap-fix-card {
+  margin-bottom: 0.875rem;
+  border-left: 4px solid var(--border);
+}
+.ap-fix-card--high   { border-left-color: var(--red);   background: #fef9f9; }
+.ap-fix-card--medium { border-left-color: var(--amber); background: #fffdf5; }
+.ap-fix-card--low    { border-left-color: var(--border); }
+
+.ap-fix-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.25rem 0.5rem;
+  flex-wrap: wrap;
+}
+.ap-fix-url {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+.ap-fix-issue {
+  padding: 0 1.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.ap-fix-action {
+  padding: 0.5rem 1.25rem 1rem;
+  font-size: 0.875rem;
+  color: var(--green-dark);
+  font-weight: 500;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  background: rgba(16,185,129,0.04);
+}
+
+/* ── Content Update rows ─────────────────────────────────── */
+.ap-update-row {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.ap-update-row--border {
+  border-top: 1px solid var(--border);
+}
+.ap-update-url {
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+.ap-update-what {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.ap-update-why {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Responsive: single-column blog grid on mobile */
+@media (max-width: 700px) {
+  .ap-blog-grid { grid-template-columns: 1fr; }
+  .ap-section-header { flex-direction: column; }
+}

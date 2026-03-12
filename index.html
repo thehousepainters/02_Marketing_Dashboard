@@ -39,6 +39,7 @@
       <button class="nav-tab" data-tab="tab-action-plan">
         <span class="tab-icon">✅</span> Action Plan
       </button>
+
       <button class="nav-tab" data-tab="tab-domination">
         <span class="tab-icon">🏆</span> Domination Score
       </button>
@@ -567,34 +568,133 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- TAB 7: DAILY WEBSITE ACTION PLAN                            -->
+    <!-- TAB 7: WEBSITE ACTION PLAN                                  -->
     <!-- ============================================================ -->
     <div class="tab-panel" id="tab-action-plan">
       <div class="tab-header">
         <div>
-          <h1 class="tab-title">Daily Website Action Plan</h1>
+          <h1 class="tab-title">Website Action Plan</h1>
           <p class="tab-subtitle">AI-powered SEO & content strategy · Powered by Claude</p>
         </div>
-        <button class="btn-primary" id="actionPlanRunBtn">✅ Generate Plan</button>
-      </div>
-      <p class="last-updated">Last generated: —</p>
-
-      <div class="alert-panel alert-panel--red" style="display:none" id="actionPlanUrgent">
-        <div class="alert-panel__header">
-          <span class="alert-icon">🚨</span>
-          <strong>Fix Today — Urgent</strong>
-        </div>
-        <div class="alert-panel__body" id="actionPlanUrgentList"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Daily Website Action Plan</h3></div>
-        <div class="coming-soon">
-          <div class="coming-soon__icon">✅</div>
-          <p class="coming-soon__title">Action Plan — Coming in Section 4</p>
-          <p class="coming-soon__text">Requires GSC + GA4 + Claude API credentials. Once connected, generates a daily prioritised list of SEO fixes, content improvements, and blog post briefs.</p>
+        <div class="tab-controls">
+          <div class="date-selector" id="apDateSelector">
+            <button class="date-btn active" data-range="28">Last 28 days</button>
+            <button class="date-btn" data-range="90">Last 90 days</button>
+          </div>
+          <button class="btn-primary" id="apRunBtn">✅ Generate Plan</button>
         </div>
       </div>
+      <p class="last-updated" id="apLastUpdated">Last generated: —</p>
+
+      <!-- Loading state -->
+      <div id="apLoading" style="display:none">
+        <div class="ai-thinking">
+          <div class="ai-spinner"></div>
+          <p class="ai-thinking__text">Pulling GSC data from Windsor.ai and generating your action plan with Claude…</p>
+        </div>
+      </div>
+
+      <!-- Idle state -->
+      <div id="apIdle">
+        <div class="card">
+          <div class="coming-soon">
+            <div class="coming-soon__icon">✅</div>
+            <p class="coming-soon__title">Action Plan Ready</p>
+            <p class="coming-soon__text">Click <strong>Generate Plan</strong> to pull your Search Console keyword and page data, then get a comprehensive action plan from Claude — blog post briefs, quick SEO wins, page title fixes, and content updates.</p>
+            <p class="coming-soon__text" style="margin-top:0.5rem"><strong>Requires:</strong> Windsor.ai API key + Claude API key in Settings.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results — populated by daily-plan.js -->
+      <div id="apResults" style="display:none">
+
+        <!-- Executive Summary -->
+        <div class="card ap-summary-card" id="apSummaryCard" style="display:none">
+          <div class="card-header">
+            <h3 class="card-title">Executive Summary</h3>
+            <span class="card-badge">Claude AI</span>
+          </div>
+          <p id="apSummaryText" class="ap-summary-text"></p>
+        </div>
+
+        <!-- Blog Post Ideas -->
+        <div id="apBlogSection">
+          <div class="ap-section-header">
+            <div>
+              <h2 class="section-heading">📝 Blog Post Ideas</h2>
+              <p class="ap-section-subtitle">Data-driven content briefs — each targeting a keyword with proven search demand</p>
+            </div>
+            <span class="card-badge" id="apBlogCount"></span>
+          </div>
+          <div class="ap-blog-grid" id="apBlogGrid"></div>
+        </div>
+
+        <!-- Quick SEO Wins -->
+        <div id="apQuickWinsSection">
+          <div class="ap-section-header">
+            <div>
+              <h2 class="section-heading">⚡ Quick SEO Wins</h2>
+              <p class="ap-section-subtitle">Keywords ranking 6–20 that could reach page 1 with targeted improvements</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-wrapper">
+              <table class="data-table" id="apQuickWinsTable">
+                <thead>
+                  <tr>
+                    <th>Keyword</th>
+                    <th>Position</th>
+                    <th>Impressions</th>
+                    <th>Clicks</th>
+                    <th>Recommended Action</th>
+                  </tr>
+                </thead>
+                <tbody id="apQuickWinsBody">
+                  <tr><td colspan="5" class="table-empty">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page Fixes -->
+        <div id="apPageFixesSection">
+          <div class="ap-section-header">
+            <div>
+              <h2 class="section-heading">🔧 Page Fixes</h2>
+              <p class="ap-section-subtitle">Existing pages with low CTR, weak title tags, or missed opportunities</p>
+            </div>
+          </div>
+          <div id="apPageFixesList"></div>
+        </div>
+
+        <!-- Content Updates -->
+        <div id="apContentUpdatesSection">
+          <div class="ap-section-header">
+            <div>
+              <h2 class="section-heading">♻️ Content Updates</h2>
+              <p class="ap-section-subtitle">Existing pages to refresh or expand for better rankings</p>
+            </div>
+          </div>
+          <div class="card">
+            <div id="apContentUpdatesList"></div>
+          </div>
+        </div>
+
+      </div><!-- /#apResults -->
+
+      <!-- Error state -->
+      <div id="apError" style="display:none">
+        <div class="alert-panel alert-panel--red">
+          <div class="alert-panel__header">
+            <span class="alert-icon">⚠️</span>
+            <strong>Action Plan Error</strong>
+          </div>
+          <div class="alert-panel__body" id="apErrorMsg"></div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ============================================================ -->
