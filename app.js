@@ -128,23 +128,54 @@ function showToast(msg, duration = 3000) {
 // ============================================================
 // TAB SWITCHING
 // ============================================================
+
+// Map tab IDs to display names for the mobile top bar
+const TAB_NAMES = {
+  'tab-meta-ads':     'Meta Ads',
+  'tab-seo':          'SEO Rankings',
+  'tab-analytics':    'Analytics',
+  'tab-page-tracker': 'Page Tracker',
+  'tab-competitors':  'Competitors',
+  'tab-war-room':     'War Room',
+  'tab-action-plan':  'Action Plan',
+  'tab-domination':   'Domination Score',
+  'tab-settings':     'Settings',
+};
+
 function initTabs() {
-  const navBtns = document.querySelectorAll('.nav-tab');
+  const navBtns = document.querySelectorAll('.nav-item[data-tab]');
   const panels  = document.querySelectorAll('.tab-panel');
+  const titleEl = document.getElementById('topBarTitle');
 
   navBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.tab;
       navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === target));
       panels.forEach(p => p.classList.toggle('active', p.id === target));
-      // Close mobile menu
-      document.getElementById('navTabs').classList.remove('open');
+      // Update mobile top bar title
+      if (titleEl) titleEl.textContent = TAB_NAMES[target] || '';
+      // Close sidebar on mobile
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebarOverlay')?.classList.remove('visible');
     });
   });
+}
 
-  // Mobile hamburger
-  document.getElementById('navHamburger').addEventListener('click', () => {
-    document.getElementById('navTabs').classList.toggle('open');
+// ============================================================
+// SIDEBAR (mobile toggle)
+// ============================================================
+function initSidebar() {
+  const toggle  = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  toggle?.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('visible');
+  });
+  overlay?.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
   });
 }
 
@@ -365,13 +396,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (_changed) localStorage.setItem('rc_config', JSON.stringify(_saved));
 
   initTabs();
+  initSidebar();
   initSettings();
   initChartDefaults();
 
   // If no API keys are configured, jump to Settings tab and show a banner
   const _cfg = AppConfig.load();
   if (!_cfg.WINDSOR_API_KEY) {
-    document.querySelector('[data-tab="tab-settings"]').click();
+    document.querySelector('.nav-item[data-tab="tab-settings"]').click();
     showToast('👋 Welcome! Add your API keys in Settings to get started.', 6000);
   }
 
