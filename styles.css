@@ -494,18 +494,20 @@ img { max-width: 100%; }
    ALERT PANELS
    ============================================================ */
 .alert-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gray-300);
   border-radius: var(--radius-xl);
   padding: 1rem 1.25rem;
   display: flex;
   gap: 0.875rem;
   align-items: flex-start;
   margin-bottom: 1rem;
-  border: 1px solid;
 }
-.alert-panel--red    { background: #fff1f0; border-color: #fca5a5; }
-.alert-panel--amber  { background: #fffbeb; border-color: #fcd34d; }
-.alert-panel--green  { background: #f0fdf4; border-color: #86efac; }
-.alert-panel--blue   { background: #eff6ff; border-color: #93c5fd; }
+.alert-panel--red    { border-left-color: var(--red); }
+.alert-panel--amber  { border-left-color: var(--amber); }
+.alert-panel--green  { border-left-color: var(--green); }
+.alert-panel--blue   { border-left-color: var(--brand); }
 
 .alert-panel-icon { font-size: 1.125rem; flex-shrink: 0; margin-top: 1px; }
 .alert-panel-body { flex: 1; }
@@ -1722,8 +1724,8 @@ img { max-width: 100%; }
    ANALYTICS — Alert panel (collapsible, JS-driven)
    ============================================================ */
 .ana-alert-panel {
-  background: #fff1f0;
-  border: 1px solid #fca5a5;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-left: 4px solid var(--red);
   border-radius: var(--radius-xl);
   margin-bottom: 1.25rem;
@@ -1749,9 +1751,9 @@ img { max-width: 100%; }
 }
 .ana-alert-panel .alert-toggle {
   background: none;
-  border: 1px solid #fca5a5;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--red);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
