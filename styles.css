@@ -1886,31 +1886,41 @@ img { max-width: 100%; }
    Top bar · Segmented selector · Card polish · Metric accents
    ================================================================ */
 
-/* ── 1. Desktop top bar — always visible ──────────────────────── */
+/* ── 1. Desktop top bar — full width ──────────────────────── */
 .top-bar {
-  display: flex;                   /* override display:none base rule */
-  left: var(--sidebar-width);      /* sits right of fixed sidebar */
+  display: flex;
+  left: 0;                         /* full width from edge to edge */
+  padding: 0;
+}
+.top-bar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: var(--sidebar-width);
+  padding: 0 1.25rem;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.top-bar-title {
   padding: 0 1.5rem;
+}
+.top-bar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  padding-right: 1.5rem;
 }
 .sidebar {
   top: var(--top-bar-h);
   height: calc(100vh - var(--top-bar-h));
 }
+.sidebar-logo { display: none; }   /* logo is now in the header */
 .main-content {
   padding-top: calc(var(--top-bar-h) + 1.5rem);
 }
 
 /* Hamburger only needed on mobile */
 .hamburger { display: none; }
-
-/* Top bar app brand */
-.top-bar-brand {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  letter-spacing: -0.02em;
-}
 
 /* Top bar title breadcrumb */
 .top-bar-title {
