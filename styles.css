@@ -1418,11 +1418,11 @@ img { max-width: 100%; }
   font-weight: 500;
 }
 .ds-pillar-track {
-  height: 5px;
+  height: 8px;
   background: var(--gray-100);
   border-radius: 9999px;
   overflow: hidden;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.5rem;
 }
 .ds-pillar-fill {
   height: 100%;
@@ -1444,7 +1444,7 @@ img { max-width: 100%; }
 /* Key metrics grid — fix class name (.ds-metric not .ds-metric-tile) */
 .ds-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.875rem;
 }
 .ds-metric {
@@ -1454,7 +1454,7 @@ img { max-width: 100%; }
   padding: 1rem 1.125rem;
 }
 .ds-metric-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;

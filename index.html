@@ -65,17 +65,17 @@
     .war-room-idle,.war-room-loading,.war-room-error{ /* states handled by display:none */ }
     .war-room-summary{ display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem; }
     .war-room-cards{ display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:1rem; }
-    .ds-main-grid{ display:grid;grid-template-columns:280px 1fr;gap:1.25rem;margin-bottom:1rem;align-items:start; }
-    .ds-gauge-card{ display:flex;flex-direction:column;align-items:center;padding:1.5rem 1.25rem; }
-    .ds-gauge-svg { display:block;width:160px;height:140px; }
+    .ds-main-grid{ display:grid;grid-template-columns:300px 1fr;gap:1.5rem;margin-bottom:1.5rem;align-items:start; }
+    .ds-gauge-card{ display:flex;flex-direction:column;align-items:center;padding:2rem 1.5rem; }
+    .ds-gauge-svg { display:block;width:190px;height:165px; }
     .ds-score-band{ font-size:0.9375rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin:0.5rem 0; }
-    .ds-band-legend{ display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-top:0.75rem; }
-    .ds-legend-item{ font-size:0.7rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:9999px; }
+    .ds-band-legend{ display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-top:1rem; }
+    .ds-legend-item{ font-size:0.7rem;font-weight:600;padding:0.2rem 0.625rem;border-radius:9999px; }
     .ds-legend-item--green { background:var(--green-light);color:var(--green-dark); }
     .ds-legend-item--amber { background:var(--amber-light);color:#b45309; }
     .ds-legend-item--orange{ background:#ffedd5;color:#c2410c; }
     .ds-legend-item--red   { background:var(--red-light);color:var(--red); }
-    .ds-pillars-card { padding:1.25rem 1.5rem; }
+    .ds-pillars-card { padding:1.5rem 1.75rem; }
     .ai-thinking__spinner{ width:36px;height:36px;border:3px solid var(--gray-200);border-top-color:var(--brand);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:0.75rem; }
     @media(max-width:900px){ .ds-main-grid{grid-template-columns:1fr;} }
     @media(max-width:600px){ .zone-summary-strip{flex-direction:column;} }
