@@ -94,7 +94,9 @@ function getDateRange(range) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   let from, to;
-  if (range === 'yesterday') {
+  if (range === 'today') {
+    from = to = toISODate(today);
+  } else if (range === 'yesterday') {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     from = to = toISODate(yesterday);
