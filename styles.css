@@ -1366,182 +1366,142 @@ img { max-width: 100%; }
 /* ============================================================
    DOMINATION SCORE (Tab 8)
    ============================================================ */
-.ds-layout {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
 
-.ds-gauge-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: 1.75rem 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: var(--shadow-sm);
-}
-.ds-gauge-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-.ds-gauge-wrap svg { display: block; }
-.ds-gauge-score {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-top: 0.5rem;
-}
-.ds-score-num {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-.ds-score-denom {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
+/* Gauge card (inline styles handle flex/align — we add extra polish) */
+.ds-gauge-card { box-shadow: var(--shadow-sm); }
+
+/* Score band — pill badge style (overrides inline style) */
 .ds-score-band {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  margin-top: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  display: inline-flex !important;
+  align-items: center;
+  padding: 0.25rem 0.875rem !important;
+  border-radius: 9999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  margin-top: 0.625rem !important;
 }
-.ds-score-band.dominant  { color: var(--green-dark); }
-.ds-score-band.strong    { color: var(--green); }
-.ds-score-band.building  { color: var(--amber); }
-.ds-score-band.lagging   { color: var(--red); }
+.ds-band--green  { background: var(--green-light);  color: #15803d; }
+.ds-band--amber  { background: var(--amber-light);  color: #b45309; }
+.ds-band--orange { background: #ffedd5;              color: #c2410c; }
+.ds-band--red    { background: var(--red-light);     color: var(--red); }
 
-.ds-gauge-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-}
-.ds-gauge-sub {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-  text-align: center;
-  margin-bottom: 1.25rem;
-}
-.ds-timestamp {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: center;
-}
-
-/* Pillars */
-.ds-pillars {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-.ds-pillars-title {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-}
+/* Pillar rows — fix class names to match what domination-score.js generates */
 .ds-pillar {
-  margin-bottom: 1.125rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--gray-100);
 }
-.ds-pillar:last-child { margin-bottom: 0; }
+.ds-pillar:last-child { border-bottom: none; padding-bottom: 0; }
+
 .ds-pillar-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   margin-bottom: 0.375rem;
 }
-.ds-pillar-name { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
-.ds-pillar-score-txt { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); }
-.ds-pillar-max { font-size: 0.75rem; color: var(--text-muted); }
-.ds-pillar-bar-bg {
-  height: 8px;
+.ds-pillar-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ds-pillar-score {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.ds-pillar-max {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.ds-pillar-track {
+  height: 5px;
   background: var(--gray-100);
   border-radius: 9999px;
   overflow: hidden;
+  margin-bottom: 0.375rem;
 }
-.ds-pillar-bar-fill {
+.ds-pillar-fill {
   height: 100%;
   border-radius: 9999px;
-  background: var(--brand);
   transition: width 0.6s ease;
 }
-.ds-pillar-bar-fill.good  { background: var(--green); }
-.ds-pillar-bar-fill.mid   { background: var(--amber); }
-.ds-pillar-bar-fill.low   { background: var(--red); }
-.ds-pillar-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+.ds-pillar-insight {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.ds-pillar-nodata {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-left: 0.375rem;
+}
 
-/* Metrics strip */
+/* Key metrics grid — fix class name (.ds-metric not .ds-metric-tile) */
 .ds-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.875rem;
-  margin-bottom: 1.25rem;
 }
-.ds-metric-tile {
-  background: var(--bg-card);
+.ds-metric {
+  background: var(--gray-50);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 1rem 1.125rem;
-  box-shadow: var(--shadow-sm);
 }
-.ds-metric-label { font-size: 0.6875rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
-.ds-metric-value { font-size: 1.375rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
-.ds-metric-sub   { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.125rem; }
-
-/* Insights */
-.ds-insights {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-.ds-insights-title {
-  font-size: 0.875rem;
+.ds-metric-value {
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 1rem;
-  display: flex; align-items: center; gap: 0.5rem;
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
 }
-.ds-insight-item {
+.ds-metric-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ds-metric-sub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
+}
+
+/* Insights — fix class names (.ds-insight-row not .ds-insight-item) */
+.ds-insight-row {
   display: flex;
-  gap: 0.875rem;
   align-items: flex-start;
+  gap: 0.875rem;
   padding: 0.875rem 0;
   border-bottom: 1px solid var(--gray-100);
 }
-.ds-insight-item:last-child { border-bottom: none; padding-bottom: 0; }
-.ds-insight-icon {
-  width: 36px; height: 36px;
-  border-radius: var(--radius-lg);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem;
+.ds-insight-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.ds-insight-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
   flex-shrink: 0;
 }
-.ds-insight-icon.focus  { background: var(--red-light); }
-.ds-insight-icon.boost  { background: var(--amber-light); }
-.ds-insight-icon.great  { background: var(--green-light); }
-.ds-insight-text h4 { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; }
-.ds-insight-text p  { font-size: 0.8125rem; color: var(--gray-600); }
+.ds-insight-badge--keep {
+  background: var(--green-light);
+  color: #15803d;
+}
+.ds-insight-row--keep .ds-insight-badge { background: var(--green-light); color: #15803d; }
 
-/* Right column wrapper for gauge page */
-.ds-right-col { display: flex; flex-direction: column; gap: 1.25rem; }
+.ds-insight-text {
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+  line-height: 1.55;
+  padding-top: 0.25rem;
+}
 
 /* ============================================================
    TEXT UTILITIES
