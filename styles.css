@@ -857,16 +857,11 @@ img { max-width: 100%; }
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   padding: 1.25rem 1.375rem;
-  border-left: 4px solid var(--gray-300);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
 }
-/* Color left border based on badge inside — modern CSS :has() */
-.verdict-card:has(.verdict-badge--stop) { border-left-color: var(--red);   background: #fff8f8; }
-.verdict-card:has(.verdict-badge--keep) { border-left-color: var(--green); background: #f6fff9; }
-.verdict-card:has(.verdict-badge--test) { border-left-color: var(--amber); background: #fffdf4; }
 
 /* Card header: ad name + verdict badge */
 .verdict-card__header {
