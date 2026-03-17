@@ -313,6 +313,34 @@
         </div>
       </div>
 
+      <!-- Lead Feed -->
+      <div class="card" id="leadFeedCard">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Recent Leads</h3>
+            <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.125rem;">Individual lead records from Facebook Lead Ads · last 28 days</p>
+          </div>
+          <span class="card-badge" id="leadFeedCount">—</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="leadFeedTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Campaign</th>
+                <th>Ad Set</th>
+                <th>Ad</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="leadFeedTableBody">
+              <tr><td colspan="6" class="table-empty">Loading leads…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Ad-Level Table -->
       <div class="card">
         <div class="card-header">

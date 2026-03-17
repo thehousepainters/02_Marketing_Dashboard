@@ -472,6 +472,59 @@ Respond with ONLY valid JSON in this exact structure:
   }
 
   // ============================================================
+  // FACEBOOK LEADS FEED
+  // ============================================================
+  async function fetchLeadsFeed() {
+    const cfg = AppConfig.load();
+    if (!cfg.WINDSOR_API_KEY) return [];
+    const fields = ['full_name', 'email', 'campaign', 'adset_name', 'ad_name', 'created_time'].join(',');
+    const params = new URLSearchParams({
+      api_key:     cfg.WINDSOR_API_KEY,
+      date_preset: 'last_28d',
+      fields,
+    });
+    const res = await fetch(`https://connectors.windsor.ai/facebook_leads?${params}`);
+    if (!res.ok) throw new Error(`Leads feed error ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json) ? json : (json.data || []);
+  }
+
+  function renderLeadsFeed(leads) {
+    const tbody = document.getElementById('leadFeedTableBody');
+    const badge = document.getElementById('leadFeedCount');
+    if (!tbody) return;
+
+    if (!leads.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No leads found in the last 28 days.</td></tr>';
+      if (badge) badge.textContent = '0 leads';
+      return;
+    }
+
+    // Sort newest first
+    leads.sort((a, b) => new Date(b.created_time || 0) - new Date(a.created_time || 0));
+    if (badge) badge.textContent = `${leads.length} lead${leads.length !== 1 ? 's' : ''}`;
+
+    tbody.innerHTML = leads.map(l => {
+      const name  = l.full_name  || '—';
+      const email = l.email      || '—';
+      const camp  = l.campaign   || '—';
+      const adset = l.adset_name || '—';
+      const ad    = l.ad_name    || '—';
+      const date  = l.created_time
+        ? new Date(l.created_time).toLocaleDateString('en-NZ', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
+        : '—';
+      return `<tr>
+        <td><strong>${name}</strong></td>
+        <td><a href="mailto:${email}" style="color:var(--brand)">${email}</a></td>
+        <td>${camp}</td>
+        <td style="color:var(--text-muted)">${adset}</td>
+        <td style="color:var(--text-muted)">${ad}</td>
+        <td style="white-space:nowrap;color:var(--text-muted)">${date}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ============================================================
   // LOAD & RENDER (Tab 1)
   // ============================================================
   async function loadMetaAds() {
@@ -481,7 +534,11 @@ Respond with ONLY valid JSON in this exact structure:
     refreshBtn.disabled = true;
 
     try {
-      const raw  = await fetchWindsorData(from, to);
+      // Fetch ad performance + leads feed in parallel
+      const [raw, leads] = await Promise.all([
+        fetchWindsorData(from, to),
+        fetchLeadsFeed().catch(() => []),
+      ]);
       const rows = raw.map(normaliseRow);
       allAdsData = aggregateByAd(rows);
 
@@ -489,6 +546,7 @@ Respond with ONLY valid JSON in this exact structure:
       renderCharts(rows, allAdsData);
       renderTable(allAdsData);
       renderAlerts(buildAlerts(allAdsData));
+      renderLeadsFeed(leads);
       setText('metaLastUpdated', `Last updated: ${timestampNow()}`);
     } catch (err) {
       showToast('Error: ' + err.message, 6000);
