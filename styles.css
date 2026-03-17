@@ -1728,7 +1728,7 @@ img { max-width: 100%; }
    ============================================================ */
 .channel-list,
 .device-list {
-  padding: 0.25rem 0;
+  padding: 0 0 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -1751,7 +1751,7 @@ img { max-width: 100%; }
 
 /* Device list has an extra icon column */
 .device-list .ana-list-head {
-  grid-template-columns: 24px 1fr 70px 52px 70px;
+  grid-template-columns: 24px 1fr 80px 52px 64px;
 }
 
 .channel-row {
@@ -1798,7 +1798,7 @@ img { max-width: 100%; }
 
 .device-row {
   display: grid;
-  grid-template-columns: 24px 1fr 70px 52px 70px;
+  grid-template-columns: 24px 1fr 80px 52px 64px;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.375rem;
@@ -1876,7 +1876,7 @@ img { max-width: 100%; }
 @media (max-width: 900px) {
   .channel-row  { grid-template-columns: 110px 1fr 52px 70px; }
   .channel-row .channel-stat:last-child { display: none; }
-  .device-row   { grid-template-columns: 28px 70px 1fr 44px 70px; }
+  .device-row   { grid-template-columns: 24px 1fr 60px 44px 56px; }
   .device-row .device-sessions { display: none; }
 }
 

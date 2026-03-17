@@ -764,14 +764,20 @@
           </div>
         </div>
 
-        <!-- New vs Returning + Traffic Sources -->
+        <!-- Device Breakdown + Traffic Sources -->
         <div class="two-col">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">New vs Returning</h3>
+              <h3 class="card-title">Device Breakdown</h3>
             </div>
-            <div class="chart-container" style="height:220px">
-              <canvas id="anaNewVsChart"></canvas>
+            <div class="ana-list-head">
+              <span>Device</span>
+              <span>Sessions</span>
+              <span>Share</span>
+              <span>Conv.</span>
+            </div>
+            <div class="device-list" id="anaDevicesBody">
+              <p class="text-muted" style="padding:1rem">Loading…</p>
             </div>
           </div>
           <div class="card">
@@ -790,20 +796,14 @@
           </div>
         </div>
 
-        <!-- Device Breakdown + Top Locations -->
+        <!-- New vs Returning + Top Locations -->
         <div class="two-col">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Device Breakdown</h3>
+              <h3 class="card-title">New vs Returning</h3>
             </div>
-            <div class="ana-list-head">
-              <span>Device</span>
-              <span>Sessions</span>
-              <span>Share</span>
-              <span>Conv.</span>
-            </div>
-            <div class="device-list" id="anaDevicesBody">
-              <p class="text-muted" style="padding:1rem">Loading…</p>
+            <div class="chart-container" style="height:240px;padding:1rem 1.5rem 1.5rem">
+              <canvas id="anaNewVsChart"></canvas>
             </div>
           </div>
           <div class="card">
