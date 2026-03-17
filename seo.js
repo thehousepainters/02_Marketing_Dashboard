@@ -44,6 +44,14 @@ const SEO = (() => {
     return json.data || json.result || [];
   }
 
+  // ── Strip Windsor licence-expired placeholder rows ────────
+  function cleanRows(rows) {
+    return rows.filter(r => {
+      const str = JSON.stringify(r).toLowerCase();
+      return !str.includes('license expired') && !str.includes('windsor.ai/pricing');
+    });
+  }
+
   // ── Aggregation ───────────────────────────────────────────
   function aggregateByQuery(rows) {
     const map = {};
@@ -430,7 +438,7 @@ const SEO = (() => {
     // ── 1. Pages ─────────────────────────────────────────────
     let pages = [];
     if (pgRaw.status === 'fulfilled') {
-      pages = pgRaw.value.map(pg => ({
+      pages = cleanRows(pgRaw.value).map(pg => ({
         page:        pg.page        || '',
         clicks:      pg.clicks      || 0,
         impressions: pg.impressions || 0,
@@ -444,8 +452,8 @@ const SEO = (() => {
 
     // ── 2. Keywords + momentum + CTR opps ────────────────────
     if (kwCurr.status === 'fulfilled') {
-      const prevMap = kwPrev.status === 'fulfilled' ? buildPrevMap(kwPrev.value) : {};
-      allKeywords = aggregateByQuery(kwCurr.value).map(kw => ({
+      const prevMap = kwPrev.status === 'fulfilled' ? buildPrevMap(cleanRows(kwPrev.value)) : {};
+      allKeywords = aggregateByQuery(cleanRows(kwCurr.value)).map(kw => ({
         ...kw,
         prevPos:   prevMap[kw.query] || null,
         posChange: prevMap[kw.query] ? prevMap[kw.query] - kw.position : 0,
@@ -464,8 +472,8 @@ const SEO = (() => {
     }
 
     // ── 3. Device + Country ───────────────────────────────────
-    if (deviceRaw.status === 'fulfilled')  renderDeviceChart(deviceRaw.value);
-    if (countryRaw.status === 'fulfilled') renderCountryTable(countryRaw.value);
+    if (deviceRaw.status === 'fulfilled')  renderDeviceChart(cleanRows(deviceRaw.value));
+    if (countryRaw.status === 'fulfilled') renderCountryTable(cleanRows(countryRaw.value));
 
     setText('seoLastUpdated', `Last updated: ${timestampNow()}`);
     showLoading(false);
