@@ -713,8 +713,8 @@
       <!-- Main content -->
       <div id="anaContent">
 
-        <!-- Overview Cards — row 1: traffic -->
-        <div class="cards-grid cards-grid--3">
+        <!-- Overview Cards — row 1 -->
+        <div class="cards-grid cards-grid--4">
           <div class="metric-card">
             <div class="metric-label">Sessions</div>
             <div class="metric-value" id="anaSessions">—</div>
@@ -725,15 +725,23 @@
             <div class="metric-value" id="anaUsers">—</div>
           </div>
           <div class="metric-card">
+            <div class="metric-label">Page Views</div>
+            <div class="metric-value" id="anaPageViews">—</div>
+          </div>
+          <div class="metric-card">
             <div class="metric-label">Avg Session Duration</div>
             <div class="metric-value" id="anaDuration">—</div>
           </div>
         </div>
-        <!-- Overview Cards — row 2: conversions -->
-        <div class="cards-grid cards-grid--3">
+        <!-- Overview Cards — row 2 -->
+        <div class="cards-grid cards-grid--4">
           <div class="metric-card">
             <div class="metric-label">Bounce Rate</div>
             <div class="metric-value" id="anaBounce">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Engagement Rate</div>
+            <div class="metric-value" id="anaEngagement">—</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Total Conversions</div>
@@ -746,8 +754,26 @@
           </div>
         </div>
 
-        <!-- Traffic Sources + Device Breakdown -->
+        <!-- Sessions & Conversions Trend -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Sessions &amp; Conversions Trend</h3>
+          </div>
+          <div class="chart-container" style="height:220px">
+            <canvas id="anaTrendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- New vs Returning + Traffic Sources -->
         <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">New vs Returning</h3>
+            </div>
+            <div class="chart-container" style="height:220px">
+              <canvas id="anaNewVsChart"></canvas>
+            </div>
+          </div>
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">Traffic Sources</h3>
@@ -762,6 +788,10 @@
               <p class="text-muted" style="padding:1rem">Loading…</p>
             </div>
           </div>
+        </div>
+
+        <!-- Device Breakdown + Top Locations -->
+        <div class="two-col">
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">Device Breakdown</h3>
@@ -774,6 +804,17 @@
             </div>
             <div class="device-list" id="anaDevicesBody">
               <p class="text-muted" style="padding:1rem">Loading…</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Top Locations</h3>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead><tr><th>City / Country</th><th>Sessions</th><th>Share</th><th>Conv. Rate</th></tr></thead>
+                <tbody id="anaGeoBody"><tr><td colspan="4" class="table-empty">Loading…</td></tr></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -798,6 +839,33 @@
               </thead>
               <tbody id="anaPagesTableBody">
                 <tr><td colspan="6" class="table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Landing Pages -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Top Landing Pages</h3>
+              <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.125rem">First page visitors land on — high bounce may indicate ad/content mismatch</p>
+            </div>
+            <span class="card-badge card-badge--amber">Amber = high bounce</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Landing Page</th>
+                  <th>Sessions</th>
+                  <th>Bounce Rate</th>
+                  <th>Conv. Rate</th>
+                  <th>Conversions</th>
+                </tr>
+              </thead>
+              <tbody id="anaLandingBody">
+                <tr><td colspan="5" class="table-empty">Loading…</td></tr>
               </tbody>
             </table>
           </div>
