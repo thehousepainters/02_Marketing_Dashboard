@@ -442,7 +442,7 @@ const Analytics = (() => {
           </div>
           <div class="channel-stat">${formatNumber(ch.sessions)}</div>
           <div class="channel-stat text-muted">${pct.toFixed(1)}%</div>
-          <div class="channel-stat">${convRate}% conv.</div>
+          <div class="channel-stat">${convRate}%</div>
         </div>
       `;
     }).join('');
