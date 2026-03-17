@@ -2013,24 +2013,8 @@ img { max-width: 100%; }
 .table-wrap { border-radius: var(--radius-md); }
 .pt-page-card, .verdict-card { border-radius: var(--radius-lg); }
 
-/* ── 4. Metric card top-accent bar ───────────────────────────── */
-.metric-card {
-  position: relative;
-  overflow: hidden;
-}
-.metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--gray-200);
-}
-.cards-grid .metric-card:nth-child(1)::before { background: var(--brand); }
-.cards-grid .metric-card:nth-child(2)::before { background: var(--green); }
-.cards-grid .metric-card:nth-child(3)::before { background: var(--amber); }
-.cards-grid .metric-card:nth-child(4)::before { background: var(--red); }
-.cards-grid .metric-card:nth-child(5)::before { background: var(--blue); }
-.cards-grid .metric-card:nth-child(6)::before { background: var(--gray-400); }
+/* ── 4. Metric card — clean, no colour bars ──────────────────── */
+.metric-card { position: relative; }
 
 /* ── 5. Metric value sizing ──────────────────────────────────── */
 .metric-card .metric-value {
