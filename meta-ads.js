@@ -76,6 +76,8 @@ Respond with ONLY valid JSON in this exact structure:
       'actions_lead', 'cost_per_action_type_lead',
       'website_purchase_roas_offsite_conversion_fb_pixel_purchase',
       'clicks', 'ctr', 'impressions', 'frequency', 'effective_status',
+      'reach', 'outbound_clicks', 'landing_page_views',
+      'quality_ranking', 'engagement_rate_ranking', 'conversion_rate_ranking',
     ].join(',');
 
     const params = new URLSearchParams({
@@ -98,22 +100,27 @@ Respond with ONLY valid JSON in this exact structure:
 
   // Normalise a row from Windsor into consistent internal field names
   function normaliseRow(row) {
-    // Windsor returns CTR as a decimal (0.0159 = 1.59%) — multiply by 100
     const rawCtr = parseFloat(row.ctr) || 0;
     return {
-      date:          row.date || '',
-      ad_name:       row.ad_name || '—',
-      campaign_name: row.campaign || '—',          // Windsor field is "campaign"
-      adset_name:    row.adset_name || '—',
-      spend:         parseFloat(row.spend) || 0,
-      leads:         parseInt(row.actions_lead) || 0,
-      cpl:           parseFloat(row.cost_per_action_type_lead) || 0,
-      roas:          parseFloat(row.website_purchase_roas_offsite_conversion_fb_pixel_purchase) || 0,
-      clicks:        parseInt(row.clicks) || 0,
-      ctr:           rawCtr < 1 ? rawCtr * 100 : rawCtr, // normalise to percentage
-      impressions:   parseInt(row.impressions) || 0,
-      frequency:     parseFloat(row.frequency) || 0,
-      status:        row.effective_status || '—',
+      date:                    row.date || '',
+      ad_name:                 row.ad_name || '—',
+      campaign_name:           row.campaign || '—',
+      adset_name:              row.adset_name || '—',
+      spend:                   parseFloat(row.spend) || 0,
+      leads:                   parseInt(row.actions_lead) || 0,
+      cpl:                     parseFloat(row.cost_per_action_type_lead) || 0,
+      roas:                    parseFloat(row.website_purchase_roas_offsite_conversion_fb_pixel_purchase) || 0,
+      clicks:                  parseInt(row.clicks) || 0,
+      ctr:                     rawCtr < 1 ? rawCtr * 100 : rawCtr,
+      impressions:             parseInt(row.impressions) || 0,
+      frequency:               parseFloat(row.frequency) || 0,
+      status:                  row.effective_status || '—',
+      reach:                   parseInt(row.reach) || 0,
+      outbound_clicks:         parseInt(row.outbound_clicks) || 0,
+      landing_page_views:      parseInt(row.landing_page_views) || 0,
+      quality_ranking:         row.quality_ranking || '',
+      engagement_rate_ranking: row.engagement_rate_ranking || '',
+      conversion_rate_ranking: row.conversion_rate_ranking || '',
     };
   }
 
@@ -125,18 +132,23 @@ Respond with ONLY valid JSON in this exact structure:
       if (!map[key]) {
         map[key] = { ...row, _rows: 1 };
       } else {
-        map[key].spend       += row.spend;
-        map[key].leads       += row.leads;
-        map[key].clicks      += row.clicks;
-        map[key].impressions += row.impressions;
-        map[key]._rows       += 1;
+        map[key].spend              += row.spend;
+        map[key].leads              += row.leads;
+        map[key].clicks             += row.clicks;
+        map[key].impressions        += row.impressions;
+        map[key].reach              += row.reach;
+        map[key].outbound_clicks    += row.outbound_clicks;
+        map[key].landing_page_views += row.landing_page_views;
+        map[key]._rows              += 1;
+        // Rankings: keep most recent non-empty value
+        if (row.quality_ranking)         map[key].quality_ranking         = row.quality_ranking;
+        if (row.engagement_rate_ranking) map[key].engagement_rate_ranking = row.engagement_rate_ranking;
+        if (row.conversion_rate_ranking) map[key].conversion_rate_ranking = row.conversion_rate_ranking;
       }
     });
-    // Recalculate derived metrics
     return Object.values(map).map(ad => {
       ad.cpl  = ad.leads > 0 ? ad.spend / ad.leads : 0;
       ad.ctr  = ad.impressions > 0 ? (ad.clicks / ad.impressions) * 100 : 0;
-      // Average ROAS and frequency across days
       const subset = rows.filter(r =>
         r.campaign_name === ad.campaign_name && r.ad_name === ad.ad_name
       );
@@ -196,21 +208,28 @@ Respond with ONLY valid JSON in this exact structure:
 
     ads.forEach(ad => {
       if (ad.cpl > cplThresh && ad.leads > 0) {
-        alerts.push({
-          type: 'red',
+        alerts.push({ type: 'red',
           msg: `CPL alert: "${ad.ad_name}" — CPL is ${formatNZD(ad.cpl)} (threshold: ${formatNZD(cplThresh)})`
         });
       }
       if (ad.frequency > freqThresh) {
-        alerts.push({
-          type: 'amber',
+        alerts.push({ type: 'amber',
           msg: `High frequency: "${ad.ad_name}" — frequency ${ad.frequency.toFixed(1)} (threshold: ${freqThresh})`
         });
       }
       if (ad.spend > spendThresh && ad.leads === 0) {
-        alerts.push({
-          type: 'red',
+        alerts.push({ type: 'red',
           msg: `Spending with 0 leads: "${ad.ad_name}" — spent ${formatNZD(ad.spend)} with zero leads`
+        });
+      }
+      if (ad.quality_ranking === 'BELOW_AVERAGE') {
+        alerts.push({ type: 'amber',
+          msg: `Below average quality: "${ad.ad_name}" — Facebook rates this ad below average. Refresh creative or copy.`
+        });
+      }
+      if (ad.conversion_rate_ranking === 'BELOW_AVERAGE') {
+        alerts.push({ type: 'amber',
+          msg: `Below average conversions: "${ad.ad_name}" — Facebook says your landing page converts below average. Check the page.`
         });
       }
     });
@@ -226,21 +245,27 @@ Respond with ONLY valid JSON in this exact structure:
     const totalLeads  = ads.reduce((s, a) => s + a.leads, 0);
     const totalClicks = ads.reduce((s, a) => s + a.clicks, 0);
     const totalImpr   = ads.reduce((s, a) => s + a.impressions, 0);
+    const totalReach  = ads.reduce((s, a) => s + a.reach, 0);
+    const totalLPV    = ads.reduce((s, a) => s + a.landing_page_views, 0);
+    const totalOC     = ads.reduce((s, a) => s + a.outbound_clicks, 0);
     const cpl         = totalLeads > 0 ? totalSpend / totalLeads : 0;
     const avgRoas     = avg(ads.map(a => a.roas));
-    const cpc         = totalClicks > 0 ? totalSpend / totalClicks : 0;
+    const cpc         = totalOC > 0 ? totalSpend / totalOC : (totalClicks > 0 ? totalSpend / totalClicks : 0);
     const ctr         = totalImpr > 0 ? (totalClicks / totalImpr) * 100 : 0;
+    const lpvRate     = totalOC > 0 ? (totalLPV / totalOC) * 100 : 0;
 
     const cfg = AppConfig.load();
 
     setText('metaTotalSpend', formatNZD(totalSpend));
     setText('metaTotalLeads', formatNumber(totalLeads));
     setText('metaCPL',        formatNZD(cpl));
-    setText('metaROAS',       avgRoas > 0 ? avgRoas.toFixed(2) + 'x' : '—');
-    setText('metaCPC',        formatNZD(cpc, 2));
+    setText('metaReach',      totalReach > 0 ? formatNumber(totalReach) : '—');
     setText('metaCTR',        formatPercent(ctr));
+    setText('metaCPC',        formatNZD(cpc, 2));
+    setText('metaLPV',        totalLPV > 0 ? formatNumber(totalLPV) : '—');
+    setText('metaLPVSub',     totalOC > 0 ? `${lpvRate.toFixed(0)}% of outbound clicks loaded` : 'People who loaded your site');
+    setText('metaROAS',       avgRoas > 0 ? avgRoas.toFixed(2) + 'x' : '—');
 
-    // Colour-code CPL
     const cplEl = document.getElementById('metaCPL');
     if (cplEl) {
       cplEl.className = 'metric-value ' + (
@@ -410,17 +435,21 @@ Respond with ONLY valid JSON in this exact structure:
         (ad.spend > cfg.SPEND_ZERO_LEAD_THRESHOLD && ad.leads === 0) ? 'row--red' :
         ad.frequency > cfg.FREQUENCY_ALERT_THRESHOLD ? 'row--amber' : '';
 
+      const qualityBadge = rankBadge(ad.quality_ranking);
+
       return `
         <tr class="${rowClass}">
-          <td title="${ad.ad_name}">${shortLabel(ad.ad_name, 30)}</td>
-          <td title="${ad.campaign_name}">${shortLabel(ad.campaign_name, 25)}</td>
+          <td title="${ad.ad_name}">${shortLabel(ad.ad_name, 28)}</td>
+          <td title="${ad.campaign_name}">${shortLabel(ad.campaign_name, 22)}</td>
           <td>${formatNZD(ad.spend)}</td>
           <td>${ad.leads}</td>
           <td class="${ad.cpl > cfg.CPL_ALERT_THRESHOLD && ad.leads > 0 ? 'text-red' : ''}">${ad.leads > 0 ? formatNZD(ad.cpl) : '—'}</td>
+          <td>${ad.reach > 0 ? formatNumber(ad.reach) : '—'}</td>
+          <td>${ad.landing_page_views > 0 ? formatNumber(ad.landing_page_views) : '—'}</td>
           <td>${formatPercent(ad.ctr)}</td>
-          <td>${formatNumber(ad.impressions)}</td>
           <td class="${ad.frequency > cfg.FREQUENCY_ALERT_THRESHOLD ? 'text-amber' : ''}">${ad.frequency.toFixed(1)}</td>
           <td>${ad.roas > 0 ? ad.roas.toFixed(2) + 'x' : '—'}</td>
+          <td>${qualityBadge}</td>
           <td><span class="status-badge status-badge--active">Active</span></td>
         </tr>
       `;
@@ -469,6 +498,198 @@ Respond with ONLY valid JSON in this exact structure:
     a.download = `meta-ads-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // ============================================================
+  // RANKING BADGE HELPER
+  // ============================================================
+  function rankBadge(rank) {
+    if (!rank) return '<span style="color:var(--text-muted);font-size:0.75rem">—</span>';
+    const map = {
+      'ABOVE_AVERAGE': ['#d1fae5','#065f46','↑ Above Avg'],
+      'AVERAGE':       ['#f1f5f9','#475569','→ Average'],
+      'BELOW_AVERAGE': ['#fee2e2','#991b1b','↓ Below Avg'],
+    };
+    const [bg, color, label] = map[rank] || ['#f1f5f9','#475569', rank];
+    return `<span style="display:inline-flex;padding:0.2rem 0.6rem;border-radius:9999px;font-size:0.7rem;font-weight:600;background:${bg};color:${color}">${label}</span>`;
+  }
+
+  // ============================================================
+  // AD QUALITY SIGNALS TABLE
+  // ============================================================
+  function renderQualitySignals(ads) {
+    const tbody = document.getElementById('metaQualityTableBody');
+    if (!tbody) return;
+    if (!ads.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No data.</td></tr>';
+      return;
+    }
+    // Sort: most below-average signals first
+    const scored = ads.map(ad => {
+      const belowCount = [ad.quality_ranking, ad.engagement_rate_ranking, ad.conversion_rate_ranking]
+        .filter(r => r === 'BELOW_AVERAGE').length;
+      return { ...ad, belowCount };
+    }).sort((a, b) => b.belowCount - a.belowCount);
+
+    tbody.innerHTML = scored.map(ad => `
+      <tr>
+        <td title="${ad.ad_name}">${shortLabel(ad.ad_name, 30)}</td>
+        <td title="${ad.campaign_name}" style="color:var(--text-muted)">${shortLabel(ad.campaign_name, 22)}</td>
+        <td>${rankBadge(ad.quality_ranking)}</td>
+        <td>${rankBadge(ad.engagement_rate_ranking)}</td>
+        <td>${rankBadge(ad.conversion_rate_ranking)}</td>
+        <td style="font-size:0.8rem;color:${ad.belowCount > 0 ? 'var(--red)' : 'var(--green)'}">
+          ${ad.belowCount > 0 ? `⚠ ${ad.belowCount} signal${ad.belowCount > 1 ? 's' : ''} below avg` : '✓ All clear'}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ============================================================
+  // DEMOGRAPHICS (age + gender — separate Windsor fetch)
+  // ============================================================
+  let ageChart, genderChart, placementChart;
+
+  async function fetchDemographics(dateFrom, dateTo) {
+    const cfg = AppConfig.load();
+    if (!cfg.WINDSOR_API_KEY || !cfg.META_ACCOUNT_ID) return [];
+    const params = new URLSearchParams({
+      api_key:   cfg.WINDSOR_API_KEY,
+      accounts:  cfg.META_ACCOUNT_ID,
+      fields:    'age,gender,spend,impressions,clicks,actions_lead',
+      date_from: dateFrom,
+      date_to:   dateTo,
+    });
+    const res = await fetch(`https://connectors.windsor.ai/facebook?${params}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return Array.isArray(json) ? json : (json.data || []);
+  }
+
+  function renderDemographics(rows) {
+    // --- Age breakdown ---
+    const ageMap = {};
+    rows.forEach(r => {
+      if (!r.age) return;
+      if (!ageMap[r.age]) ageMap[r.age] = { spend: 0, leads: 0 };
+      ageMap[r.age].spend += parseFloat(r.spend) || 0;
+      ageMap[r.age].leads += parseInt(r.actions_lead) || 0;
+    });
+    const ages = Object.keys(ageMap).sort();
+
+    if (ageChart) ageChart.destroy();
+    const ageCtx = document.getElementById('metaAgeChart');
+    if (ageCtx && ages.length) {
+      ageChart = new Chart(ageCtx, {
+        type: 'bar',
+        data: {
+          labels: ages,
+          datasets: [
+            { label: 'Spend (NZD)', data: ages.map(a => ageMap[a].spend), backgroundColor: 'rgba(70,95,255,0.7)', borderRadius: 6, yAxisID: 'ySpend' },
+            { label: 'Leads',       data: ages.map(a => ageMap[a].leads), backgroundColor: 'rgba(23,178,106,0.7)', borderRadius: 6, yAxisID: 'yLeads' },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            ySpend: { type: 'linear', position: 'left',  ticks: { callback: v => '$' + v }, grid: { color: '#f1f5f9' } },
+            yLeads: { type: 'linear', position: 'right', ticks: { stepSize: 1, precision: 0 }, grid: { drawOnChartArea: false } },
+          },
+        },
+      });
+    }
+
+    // --- Gender breakdown ---
+    const genderMap = {};
+    rows.forEach(r => {
+      if (!r.gender) return;
+      const g = r.gender === 'male' ? 'Male' : r.gender === 'female' ? 'Female' : 'Unknown';
+      if (!genderMap[g]) genderMap[g] = 0;
+      genderMap[g] += parseFloat(r.spend) || 0;
+    });
+    const genders = Object.keys(genderMap);
+
+    if (genderChart) genderChart.destroy();
+    const genderCtx = document.getElementById('metaGenderChart');
+    if (genderCtx && genders.length) {
+      genderChart = new Chart(genderCtx, {
+        type: 'doughnut',
+        data: {
+          labels: genders,
+          datasets: [{
+            data: genders.map(g => genderMap[g]),
+            backgroundColor: ['#465fff','#17b26a','#f79009'],
+            borderWidth: 0,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toFixed(2)} spend` } },
+          },
+          cutout: '65%',
+        },
+      });
+    }
+  }
+
+  // ============================================================
+  // PLACEMENT BREAKDOWN (separate Windsor fetch)
+  // ============================================================
+  async function fetchPlacement(dateFrom, dateTo) {
+    const cfg = AppConfig.load();
+    if (!cfg.WINDSOR_API_KEY || !cfg.META_ACCOUNT_ID) return [];
+    const params = new URLSearchParams({
+      api_key:   cfg.WINDSOR_API_KEY,
+      accounts:  cfg.META_ACCOUNT_ID,
+      fields:    'publisher_platform,platform_position,spend,impressions,clicks,actions_lead',
+      date_from: dateFrom,
+      date_to:   dateTo,
+    });
+    const res = await fetch(`https://connectors.windsor.ai/facebook?${params}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return Array.isArray(json) ? json : (json.data || []);
+  }
+
+  function renderPlacement(rows) {
+    const map = {};
+    rows.forEach(r => {
+      const platform = r.publisher_platform || 'unknown';
+      const position = r.platform_position  || '';
+      const label    = position ? `${platform} · ${position}` : platform;
+      if (!map[label]) map[label] = { spend: 0, leads: 0 };
+      map[label].spend += parseFloat(r.spend) || 0;
+      map[label].leads += parseInt(r.actions_lead) || 0;
+    });
+    const labels  = Object.keys(map).sort((a, b) => map[b].spend - map[a].spend).slice(0, 10);
+    const spends  = labels.map(l => map[l].spend);
+    const leads   = labels.map(l => map[l].leads);
+
+    if (placementChart) placementChart.destroy();
+    const ctx = document.getElementById('metaPlacementChart');
+    if (!ctx || !labels.length) return;
+    placementChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Spend (NZD)', data: spends, backgroundColor: 'rgba(70,95,255,0.7)', borderRadius: 6, yAxisID: 'ySpend' },
+          { label: 'Leads',       data: leads,  backgroundColor: 'rgba(23,178,106,0.7)', borderRadius: 6, yAxisID: 'yLeads' },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          ySpend: { type: 'linear', position: 'bottom', ticks: { callback: v => '$' + v }, grid: { color: '#f1f5f9' } },
+          yLeads: { type: 'linear', position: 'top',    ticks: { stepSize: 1, precision: 0 }, grid: { drawOnChartArea: false } },
+        },
+      },
+    });
   }
 
   // ============================================================
@@ -534,9 +755,11 @@ Respond with ONLY valid JSON in this exact structure:
     refreshBtn.disabled = true;
 
     try {
-      // Fetch ad performance + leads feed in parallel
-      const [raw, leads] = await Promise.all([
+      // Fetch everything in parallel
+      const [raw, demographics, placement, leads] = await Promise.all([
         fetchWindsorData(from, to),
+        fetchDemographics(from, to).catch(() => []),
+        fetchPlacement(from, to).catch(() => []),
         fetchLeadsFeed().catch(() => []),
       ]);
       const rows = raw.map(normaliseRow);
@@ -544,6 +767,9 @@ Respond with ONLY valid JSON in this exact structure:
 
       renderSummaryCards(allAdsData);
       renderCharts(rows, allAdsData);
+      renderQualitySignals(allAdsData);
+      renderDemographics(demographics);
+      renderPlacement(placement);
       renderTable(allAdsData);
       renderAlerts(buildAlerts(allAdsData));
       renderLeadsFeed(leads);

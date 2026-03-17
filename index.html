@@ -251,7 +251,7 @@
       </div>
 
       <!-- Summary Cards -->
-      <div class="cards-grid cards-grid--6" id="metaSummaryCards">
+      <div class="cards-grid cards-grid--4" id="metaSummaryCards">
         <div class="metric-card">
           <div class="metric-label">Total Spend</div>
           <div class="metric-value" id="metaTotalSpend">—</div>
@@ -268,9 +268,14 @@
           <div class="metric-sub" id="metaCPLSub"></div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">ROAS</div>
-          <div class="metric-value" id="metaROAS">—</div>
-          <div class="metric-sub" id="metaROASSub"></div>
+          <div class="metric-label">Reach</div>
+          <div class="metric-value" id="metaReach">—</div>
+          <div class="metric-sub">Unique people reached</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">CTR</div>
+          <div class="metric-value" id="metaCTR">—</div>
+          <div class="metric-sub" id="metaCTRSub"></div>
         </div>
         <div class="metric-card">
           <div class="metric-label">Cost Per Click</div>
@@ -278,9 +283,14 @@
           <div class="metric-sub" id="metaCPCSub"></div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">CTR</div>
-          <div class="metric-value" id="metaCTR">—</div>
-          <div class="metric-sub" id="metaCTRSub"></div>
+          <div class="metric-label">Landing Page Views</div>
+          <div class="metric-value" id="metaLPV">—</div>
+          <div class="metric-sub" id="metaLPVSub">People who loaded your site</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">ROAS</div>
+          <div class="metric-value" id="metaROAS">—</div>
+          <div class="metric-sub" id="metaROASSub"></div>
         </div>
       </div>
 
@@ -310,6 +320,63 @@
         </div>
         <div class="chart-container chart-container--short">
           <canvas id="metaROASChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Ad Quality Signals -->
+      <div class="card" id="metaQualityCard">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Ad Quality Signals</h3>
+            <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.125rem;">Facebook's relevance diagnostics — below average = higher CPL</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="metaQualityTable">
+            <thead>
+              <tr>
+                <th>Ad</th>
+                <th>Campaign</th>
+                <th>Quality</th>
+                <th>Engagement Rate</th>
+                <th>Conversion Rate</th>
+                <th>Signals</th>
+              </tr>
+            </thead>
+            <tbody id="metaQualityTableBody">
+              <tr><td colspan="6" class="table-empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Demographics + Placement -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Audience — Age Breakdown</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="metaAgeChart"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Audience — Gender Split</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="metaGenderChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Placement Breakdown</h3>
+          <p style="font-size:0.8125rem;color:var(--text-muted)">Where your ads are showing — spend &amp; leads by placement</p>
+        </div>
+        <div class="chart-container chart-container--short">
+          <canvas id="metaPlacementChart"></canvas>
         </div>
       </div>
 
@@ -356,15 +423,17 @@
                 <th data-sort="spend">Spend <span class="sort-icon">↕</span></th>
                 <th data-sort="leads">Leads <span class="sort-icon">↕</span></th>
                 <th data-sort="cpl">CPL <span class="sort-icon">↕</span></th>
+                <th data-sort="reach">Reach <span class="sort-icon">↕</span></th>
+                <th data-sort="landing_page_views">LPV <span class="sort-icon">↕</span></th>
                 <th data-sort="ctr">CTR <span class="sort-icon">↕</span></th>
-                <th data-sort="impressions">Impr. <span class="sort-icon">↕</span></th>
                 <th data-sort="frequency">Freq. <span class="sort-icon">↕</span></th>
                 <th data-sort="roas">ROAS <span class="sort-icon">↕</span></th>
+                <th>Quality</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="metaAdsTableBody">
-              <tr><td colspan="10" class="table-empty">Configure Windsor.ai in Settings to load ad data.</td></tr>
+              <tr><td colspan="12" class="table-empty">Configure Windsor.ai in Settings to load ad data.</td></tr>
             </tbody>
           </table>
         </div>
