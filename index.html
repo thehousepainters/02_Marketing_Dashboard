@@ -532,6 +532,88 @@
           </div>
         </div>
 
+        <!-- Device + Country -->
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Traffic by Device</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="seoDeviceChart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Top Countries</h3>
+              <span class="card-badge" id="seoNZPct">—</span>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="seoCountryTable">
+                <thead><tr><th>Country</th><th>Clicks</th><th>Impressions</th><th>Share</th></tr></thead>
+                <tbody id="seoCountryTableBody"><tr><td colspan="4" class="table-empty">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyword Momentum -->
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">📈 Rising Keywords</h3>
+                <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.125rem">Biggest position improvements vs previous period</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="seoRisingTable">
+                <thead><tr><th>Keyword</th><th>Now</th><th>Was</th><th>Gain</th></tr></thead>
+                <tbody id="seoRisingBody"><tr><td colspan="4" class="table-empty">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">📉 Falling Keywords</h3>
+                <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.125rem">Biggest position drops vs previous period</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="seoFallingTable">
+                <thead><tr><th>Keyword</th><th>Now</th><th>Was</th><th>Drop</th></tr></thead>
+                <tbody id="seoFallingBody"><tr><td colspan="4" class="table-empty">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTR Opportunity -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">CTR Opportunities</h3>
+              <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:0.125rem">Ranking on page 1–2 but low click-through — fix the title tag or meta description</p>
+            </div>
+            <span class="card-badge card-badge--amber" id="seoCTROppCount">—</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="seoCTROppTable">
+              <thead>
+                <tr>
+                  <th>Keyword</th>
+                  <th>Position</th>
+                  <th>Impressions</th>
+                  <th>CTR</th>
+                  <th>Clicks Lost (est.)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="seoCTROppBody"><tr><td colspan="6" class="table-empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Keyword Rankings Table -->
         <div class="card">
           <div class="card-header">

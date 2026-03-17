@@ -13,6 +13,7 @@ const SEO = (() => {
   let allKeywords      = [];
   let currentZone      = 'all';
   let sortCfg          = { field: 'clicks', dir: 'desc' };
+  let seoDeviceChart   = null;
 
   // ── Date builders ──────────────────────────────────────────
   function buildDates(days, offsetDays = 0) {
@@ -232,6 +233,156 @@ const SEO = (() => {
     `).join('');
   }
 
+  // ── Render: device chart ──────────────────────────────────
+  function renderDeviceChart(rows) {
+    const map = {};
+    rows.forEach(r => {
+      const d = (r.device || 'unknown').toLowerCase();
+      const label = d === 'desktop' ? 'Desktop' : d === 'mobile' ? 'Mobile' : d === 'tablet' ? 'Tablet' : 'Other';
+      if (!map[label]) map[label] = { clicks: 0, impressions: 0 };
+      map[label].clicks      += r.clicks      || 0;
+      map[label].impressions += r.impressions || 0;
+    });
+    const labels  = Object.keys(map);
+    const clicks  = labels.map(l => map[l].clicks);
+    const colours = { Mobile: '#465fff', Desktop: '#17b26a', Tablet: '#f79009', Other: '#94a3b8' };
+
+    if (seoDeviceChart) seoDeviceChart.destroy();
+    const ctx = document.getElementById('seoDeviceChart');
+    if (!ctx || !labels.length) return;
+    seoDeviceChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data: clicks, backgroundColor: labels.map(l => colours[l] || '#94a3b8'), borderWidth: 0 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} clicks` } },
+        },
+        cutout: '60%',
+      },
+    });
+  }
+
+  // ── Render: country table ─────────────────────────────────
+  function renderCountryTable(rows) {
+    const tbody  = document.getElementById('seoCountryTableBody');
+    const badge  = document.getElementById('seoNZPct');
+    if (!tbody) return;
+
+    const map = {};
+    rows.forEach(r => {
+      const c = (r.country || 'unknown').toUpperCase();
+      if (!map[c]) map[c] = { clicks: 0, impressions: 0 };
+      map[c].clicks      += r.clicks      || 0;
+      map[c].impressions += r.impressions || 0;
+    });
+
+    const sorted = Object.entries(map)
+      .sort(([,a],[,b]) => b.clicks - a.clicks)
+      .slice(0, 10);
+
+    const totalClicks = sorted.reduce((s,[,v]) => s + v.clicks, 0) || 1;
+    const nzClicks    = (map['NZL'] || map['NZ'] || { clicks: 0 }).clicks;
+    const nzPct       = totalClicks > 0 ? ((nzClicks / totalClicks) * 100).toFixed(0) : '—';
+    if (badge) badge.textContent = `${nzPct}% NZ`;
+
+    const countryNames = { NZL:'New Zealand', AUS:'Australia', GBR:'United Kingdom', USA:'United States', CAN:'Canada', IND:'India', NZ:'New Zealand', AU:'Australia', GB:'United Kingdom', US:'United States' };
+
+    tbody.innerHTML = sorted.map(([code, v]) => {
+      const name  = countryNames[code] || code;
+      const share = ((v.clicks / totalClicks) * 100).toFixed(1);
+      return `<tr>
+        <td><strong>${name}</strong></td>
+        <td class="td-number">${formatNumber(v.clicks)}</td>
+        <td class="td-number">${formatNumber(v.impressions)}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <div style="flex:1;height:6px;background:var(--gray-100);border-radius:9999px;overflow:hidden">
+              <div style="width:${share}%;height:100%;background:var(--brand);border-radius:9999px"></div>
+            </div>
+            <span style="font-size:0.75rem;color:var(--text-muted);width:36px;text-align:right">${share}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Render: keyword momentum ──────────────────────────────
+  function renderMomentum(keywords) {
+    const withPrev = keywords.filter(k => k.prevPos && Math.abs(k.posChange) >= 1);
+
+    const rising  = [...withPrev].sort((a,b) => b.posChange - a.posChange).slice(0, 7);
+    const falling = [...withPrev].sort((a,b) => a.posChange - b.posChange).slice(0, 7);
+
+    const risingBody  = document.getElementById('seoRisingBody');
+    const fallingBody = document.getElementById('seoFallingBody');
+
+    if (risingBody) {
+      risingBody.innerHTML = rising.length
+        ? rising.map(k => `<tr>
+            <td class="td-keyword">${esc(k.query)}</td>
+            <td class="td-number"><strong>#${Math.round(k.position)}</strong></td>
+            <td class="td-number" style="color:var(--text-muted)">#${Math.round(k.prevPos)}</td>
+            <td><span style="color:var(--green);font-weight:700">↑ ${Math.round(k.posChange)}</span></td>
+          </tr>`).join('')
+        : '<tr><td colspan="4" class="table-empty">Not enough data for comparison.</td></tr>';
+    }
+
+    if (fallingBody) {
+      fallingBody.innerHTML = falling.length
+        ? falling.map(k => `<tr>
+            <td class="td-keyword">${esc(k.query)}</td>
+            <td class="td-number"><strong>#${Math.round(k.position)}</strong></td>
+            <td class="td-number" style="color:var(--text-muted)">#${Math.round(k.prevPos)}</td>
+            <td><span style="color:var(--red);font-weight:700">↓ ${Math.abs(Math.round(k.posChange))}</span></td>
+          </tr>`).join('')
+        : '<tr><td colspan="4" class="table-empty">No significant drops detected.</td></tr>';
+    }
+  }
+
+  // ── Render: CTR opportunities ─────────────────────────────
+  function renderCTROpp(keywords) {
+    const tbody = document.getElementById('seoCTROppBody');
+    const badge = document.getElementById('seoCTROppCount');
+    if (!tbody) return;
+
+    // Position 1–20, CTR < 3%, impressions >= 30
+    const opps = keywords
+      .filter(k => k.position <= 20 && (k.ctr * 100) < 3 && k.impressions >= 30)
+      .sort((a, b) => b.impressions - a.impressions);
+
+    if (badge) badge.textContent = `${opps.length} opportunities`;
+
+    if (!opps.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No CTR opportunities found — your titles are working well.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = opps.map(k => {
+      // Estimate clicks lost vs a 5% CTR benchmark
+      const benchmarkCTR  = 0.05;
+      const clicksLost    = Math.max(0, Math.round((benchmarkCTR - k.ctr) * k.impressions));
+      const action = k.position <= 5
+        ? 'Rewrite title tag — add benefit or location'
+        : k.position <= 10
+        ? 'Add keyword to H1 + meta description'
+        : 'Build 2–3 internal links to boost ranking first';
+
+      return `<tr>
+        <td class="td-keyword">${esc(k.query)}</td>
+        <td class="td-number"><strong>#${Math.round(k.position)}</strong></td>
+        <td class="td-number">${formatNumber(k.impressions)}</td>
+        <td class="td-number text-amber">${(k.ctr * 100).toFixed(1)}%</td>
+        <td class="td-number" style="color:var(--red)">~${formatNumber(clicksLost)}/period</td>
+        <td style="font-size:0.8rem;color:var(--text-muted)">${action}</td>
+      </tr>`;
+    }).join('');
+  }
+
   // ── Render: page performance table ───────────────────────
   function renderPageTable(pages) {
     const tbody = document.getElementById('seoPagesTableBody');
@@ -267,58 +418,54 @@ const SEO = (() => {
     const currDates = buildDates(currentRange);
     const prevDates = buildDates(currentRange, currentRange);
 
-    // ── 1. Page-level fetch (always works, run first) ────────
+    // ── Run all fetches in parallel ──────────────────────────
+    const [pgRaw, kwCurr, kwPrev, deviceRaw, countryRaw] = await Promise.allSettled([
+      fetchGSC(['page',    'clicks', 'impressions', 'ctr', 'position'], currDates),
+      fetchGSC(['query',   'clicks', 'impressions', 'ctr', 'position'], currDates),
+      fetchGSC(['query',   'position'],                                  prevDates),
+      fetchGSC(['device',  'clicks', 'impressions'],                     currDates),
+      fetchGSC(['country', 'clicks', 'impressions'],                     currDates),
+    ]);
+
+    // ── 1. Pages ─────────────────────────────────────────────
     let pages = [];
-    try {
-      const pgRaw = await fetchGSC(
-        ['page', 'clicks', 'impressions', 'ctr', 'position'],
-        currDates
-      );
-      pages = pgRaw.map(pg => ({
-        page:        pg.page || '',
+    if (pgRaw.status === 'fulfilled') {
+      pages = pgRaw.value.map(pg => ({
+        page:        pg.page        || '',
         clicks:      pg.clicks      || 0,
         impressions: pg.impressions || 0,
         ctr:         pg.ctr         || 0,
         position:    pg.position    || 99,
       }));
       renderPageTable(pages);
-    } catch (err) {
-      console.error('[SEO] Page fetch failed:', err);
-      const tbody = document.getElementById('seoPagesTableBody');
-      if (tbody) tbody.innerHTML =
-        `<tr><td colspan="6" class="table-empty text-red">
-          Page data unavailable: ${esc(err.message)}
-         </td></tr>`;
+    } else {
+      console.error('[SEO] Page fetch failed:', pgRaw.reason);
     }
 
-    // ── 2. Keyword fetches (independent try/catch) ───────────
-    try {
-      const [kwCurr, kwPrev] = await Promise.all([
-        fetchGSC(['query', 'clicks', 'impressions', 'ctr', 'position'], currDates),
-        fetchGSC(['query', 'position'], prevDates),
-      ]);
-
-      const prevMap = buildPrevMap(kwPrev);
-      allKeywords = aggregateByQuery(kwCurr).map(kw => ({
+    // ── 2. Keywords + momentum + CTR opps ────────────────────
+    if (kwCurr.status === 'fulfilled') {
+      const prevMap = kwPrev.status === 'fulfilled' ? buildPrevMap(kwPrev.value) : {};
+      allKeywords = aggregateByQuery(kwCurr.value).map(kw => ({
         ...kw,
         prevPos:   prevMap[kw.query] || null,
         posChange: prevMap[kw.query] ? prevMap[kw.query] - kw.position : 0,
       }));
-
       renderSummaryCards(pages, allKeywords);
       renderAlerts(allKeywords);
       renderKeywordTable();
-    } catch (err) {
-      console.error('[SEO] Keyword fetch failed:', err);
-      // Show error inline in keyword table instead of disappearing toast
+      renderMomentum(allKeywords);
+      renderCTROpp(allKeywords);
+    } else {
+      console.error('[SEO] Keyword fetch failed:', kwCurr.reason);
       const tbody = document.getElementById('seoKeywordsTableBody');
       if (tbody) tbody.innerHTML =
-        `<tr><td colspan="7" class="table-empty text-red">
-          Keyword data unavailable: ${esc(err.message)}
-         </td></tr>`;
-      // Still populate summary metrics from page data if keywords failed
+        `<tr><td colspan="7" class="table-empty text-red">Keyword data unavailable: ${esc(kwCurr.reason?.message || '')}</td></tr>`;
       if (pages.length) renderSummaryCards(pages, []);
     }
+
+    // ── 3. Device + Country ───────────────────────────────────
+    if (deviceRaw.status === 'fulfilled')  renderDeviceChart(deviceRaw.value);
+    if (countryRaw.status === 'fulfilled') renderCountryTable(countryRaw.value);
 
     setText('seoLastUpdated', `Last updated: ${timestampNow()}`);
     showLoading(false);
