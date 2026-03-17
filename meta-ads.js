@@ -76,7 +76,7 @@ Respond with ONLY valid JSON in this exact structure:
       'actions_lead', 'cost_per_action_type_lead',
       'website_purchase_roas_offsite_conversion_fb_pixel_purchase',
       'clicks', 'ctr', 'impressions', 'frequency', 'effective_status',
-      'reach', 'outbound_clicks', 'landing_page_views',
+      'reach', 'outbound_clicks', 'actions_landing_page_view',
       'quality_ranking', 'engagement_rate_ranking', 'conversion_rate_ranking',
     ].join(',');
 
@@ -117,7 +117,7 @@ Respond with ONLY valid JSON in this exact structure:
       status:                  row.effective_status || '—',
       reach:                   parseInt(row.reach) || 0,
       outbound_clicks:         parseInt(row.outbound_clicks) || 0,
-      landing_page_views:      parseInt(row.landing_page_views) || 0,
+      landing_page_views:      parseInt(row.actions_landing_page_view) || 0,
       quality_ranking:         row.quality_ranking || '',
       engagement_rate_ranking: row.engagement_rate_ranking || '',
       conversion_rate_ranking: row.conversion_rate_ranking || '',
