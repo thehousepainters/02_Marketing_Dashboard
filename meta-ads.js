@@ -698,14 +698,19 @@ Respond with ONLY valid JSON in this exact structure:
   async function fetchLeadsFeed() {
     const cfg = AppConfig.load();
     if (!cfg.WINDSOR_API_KEY) return [];
-    const fields = ['full_name', 'email', 'campaign', 'adset_name', 'ad_name', 'created_time'].join(',');
+    // Field names match Windsor's own sample URL for facebook_leads connector
+    const fields = ['account_name', 'campaign', 'ad_name', 'full_name', 'email'].join(',');
     const params = new URLSearchParams({
       api_key:     cfg.WINDSOR_API_KEY,
       date_preset: 'last_28d',
       fields,
     });
     const res = await fetch(`https://connectors.windsor.ai/facebook_leads?${params}`);
-    if (!res.ok) throw new Error(`Leads feed error ${res.status}`);
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      console.warn('[LeadsFeed] Windsor error', res.status, txt.slice(0, 300));
+      return [];
+    }
     const json = await res.json();
     return Array.isArray(json) ? json : (json.data || []);
   }

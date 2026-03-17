@@ -314,6 +314,37 @@
         </div>
       </div>
 
+      <!-- Ad-Level Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">All Ads — Full Detail</h3>
+          <span class="card-badge" id="metaAdCount">0 ads</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="metaAdsTable">
+            <thead>
+              <tr>
+                <th data-sort="ad_name">Ad Name <span class="sort-icon">↕</span></th>
+                <th data-sort="campaign_name">Campaign <span class="sort-icon">↕</span></th>
+                <th data-sort="spend">Spend <span class="sort-icon">↕</span></th>
+                <th data-sort="leads">Leads <span class="sort-icon">↕</span></th>
+                <th data-sort="cpl">CPL <span class="sort-icon">↕</span></th>
+                <th data-sort="reach">Reach <span class="sort-icon">↕</span></th>
+                <th data-sort="landing_page_views">LPV <span class="sort-icon">↕</span></th>
+                <th data-sort="ctr">CTR <span class="sort-icon">↕</span></th>
+                <th data-sort="frequency">Freq. <span class="sort-icon">↕</span></th>
+                <th data-sort="roas">ROAS <span class="sort-icon">↕</span></th>
+                <th>Quality</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="metaAdsTableBody">
+              <tr><td colspan="12" class="table-empty">Configure Windsor.ai in Settings to load ad data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">ROAS by Campaign</h3>
@@ -408,36 +439,6 @@
         </div>
       </div>
 
-      <!-- Ad-Level Table -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">All Ads — Full Detail</h3>
-          <span class="card-badge" id="metaAdCount">0 ads</span>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table" id="metaAdsTable">
-            <thead>
-              <tr>
-                <th data-sort="ad_name">Ad Name <span class="sort-icon">↕</span></th>
-                <th data-sort="campaign_name">Campaign <span class="sort-icon">↕</span></th>
-                <th data-sort="spend">Spend <span class="sort-icon">↕</span></th>
-                <th data-sort="leads">Leads <span class="sort-icon">↕</span></th>
-                <th data-sort="cpl">CPL <span class="sort-icon">↕</span></th>
-                <th data-sort="reach">Reach <span class="sort-icon">↕</span></th>
-                <th data-sort="landing_page_views">LPV <span class="sort-icon">↕</span></th>
-                <th data-sort="ctr">CTR <span class="sort-icon">↕</span></th>
-                <th data-sort="frequency">Freq. <span class="sort-icon">↕</span></th>
-                <th data-sort="roas">ROAS <span class="sort-icon">↕</span></th>
-                <th>Quality</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="metaAdsTableBody">
-              <tr><td colspan="12" class="table-empty">Configure Windsor.ai in Settings to load ad data.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
     <!-- ============================================================ -->
