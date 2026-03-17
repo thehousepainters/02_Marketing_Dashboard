@@ -286,13 +286,13 @@ const DominationScore = (() => {
           stroke-linecap="round"/>
       </g>
       <text x="${cx}" y="${cy - 5}" text-anchor="middle"
-        font-size="32" font-weight="800" fill="#111827"
+        font-size="22" font-weight="800" fill="#111827"
         font-family="Inter,system-ui,sans-serif">${score}</text>
-      <text x="${cx}" y="${cy + 13}" text-anchor="middle"
-        font-size="11" fill="#9ca3af"
+      <text x="${cx}" y="${cy + 10}" text-anchor="middle"
+        font-size="8" fill="#9ca3af"
         font-family="Inter,system-ui,sans-serif">out of 100</text>
-      <text x="${cx}" y="${cy + 30}" text-anchor="middle"
-        font-size="12" font-weight="700" fill="${color}"
+      <text x="${cx}" y="${cy + 22}" text-anchor="middle"
+        font-size="9" font-weight="700" fill="${color}"
         font-family="Inter,system-ui,sans-serif">${label}</text>
     `;
   }
