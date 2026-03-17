@@ -111,8 +111,9 @@ const Analytics = (() => {
       convPhone       += r.conversions_phone_click || 0;
       engagedSessions += r.engaged_sessions || 0;
       pageViews       += r.screen_page_views || 0;
-      if (r.new_vs_returning === 'new visitor')          newV    += s;
-      else if (r.new_vs_returning === 'returning visitor') returnV += s;
+      const nvr = (r.new_vs_returning || '').toLowerCase();
+      if (nvr.includes('new'))       newV    += s;
+      else if (nvr.includes('return')) returnV += s;
     });
 
     const totalConv = convQuote + convForm + convPhone;
@@ -463,9 +464,9 @@ const Analytics = (() => {
           <div class="device-bar-wrap">
             <div class="device-bar" style="width:${pct.toFixed(0)}%"></div>
           </div>
-          <span class="device-sessions">${formatNumber(d.sessions)} sessions</span>
+          <span class="device-sessions">${formatNumber(d.sessions)}</span>
           <span class="device-pct">${pct.toFixed(0)}%</span>
-          <span class="device-conv">${convRate}% conv.</span>
+          <span class="device-conv">${convRate}%</span>
         </div>
       `;
     }).join('');
