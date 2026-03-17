@@ -43,7 +43,7 @@ const Analytics = (() => {
       fields: [
         'date', 'sessions', 'active_users', 'bounce_rate',
         'average_session_duration', 'engaged_sessions',
-        'screen_page_views', 'new_users',
+        'screen_page_views',
         'default_channel_group', 'page_path', 'devicecategory', 'new_vs_returning',
         'conversions_quote_request', 'conversions_contact_form_submit',
         'conversions_phone_click',
@@ -82,7 +82,7 @@ const Analytics = (() => {
       api_key:  key,
       accounts: GA4_ACCOUNT,
       fields: [
-        'landing_page_path', 'sessions', 'bounce_rate',
+        'landing_page', 'sessions', 'bounce_rate',
         'conversions_quote_request', 'conversions_contact_form_submit',
         'conversions_phone_click',
       ].join(','),
@@ -98,7 +98,7 @@ const Analytics = (() => {
   function calcTotals(rows) {
     let sessions = 0, users = 0, bounceSum = 0, durSum = 0;
     let convQuote = 0, convForm = 0, convPhone = 0;
-    let newV = 0, returnV = 0, engagedSessions = 0, pageViews = 0, newUsers = 0;
+    let newV = 0, returnV = 0, engagedSessions = 0, pageViews = 0;
 
     rows.forEach(r => {
       const s = r.sessions || 0;
@@ -111,14 +111,13 @@ const Analytics = (() => {
       convPhone       += r.conversions_phone_click || 0;
       engagedSessions += r.engaged_sessions || 0;
       pageViews       += r.screen_page_views || 0;
-      newUsers        += r.new_users || 0;
       if (r.new_vs_returning === 'new visitor')          newV    += s;
       else if (r.new_vs_returning === 'returning visitor') returnV += s;
     });
 
     const totalConv = convQuote + convForm + convPhone;
     return {
-      sessions, users, pageViews, newUsers,
+      sessions, users, pageViews,
       bounceRate:     sessions > 0 ? (bounceSum / sessions) * 100 : 0,
       avgDuration:    sessions > 0 ? durSum / sessions : 0,
       totalConversions: totalConv,
@@ -210,7 +209,7 @@ const Analytics = (() => {
   function groupByLanding(landingRows) {
     const map = {};
     landingRows.forEach(r => {
-      const pg = r.landing_page_path || '/';
+      const pg = r.landing_page || r.landing_page_path || '/';
       if (!map[pg]) map[pg] = { page: pg, sessions: 0, bSum: 0, conversions: 0 };
       const s = r.sessions || 0;
       map[pg].sessions    += s;
