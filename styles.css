@@ -1749,9 +1749,12 @@ img { max-width: 100%; }
 }
 .ana-list-head span:not(:first-child) { text-align: right; }
 
-/* Device list has an extra icon column */
-.device-list .ana-list-head {
+/* Device list header: same 5-col grid as rows; "Device" label spans icon+name cols */
+.device-head {
   grid-template-columns: 24px 1fr 80px 52px 64px;
+}
+.device-head span:first-child {
+  grid-column: span 2;
 }
 
 .channel-row {
@@ -1880,6 +1883,9 @@ img { max-width: 100%; }
   .channel-row .channel-stat:last-child { display: none; }
   .device-row   { grid-template-columns: 24px 1fr 60px 44px 56px; }
   .device-row .device-sessions { display: none; }
+  /* Match device header grid to row grid, hide Sessions header */
+  .device-head { grid-template-columns: 24px 1fr 60px 44px 56px; }
+  .device-head span:nth-child(2) { display: none; }
 }
 
 /* ================================================================
