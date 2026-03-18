@@ -656,7 +656,11 @@ img { max-width: 100%; }
 .tab-panel > #apBlogSection,
 .tab-panel > #apQuickWinsSection,
 .tab-panel > #apPageFixesSection,
-.tab-panel > #apContentUpdatesSection {
+.tab-panel > #apContentUpdatesSection,
+#anaContent > .card,
+#anaContent > .cards-grid,
+#anaContent > .two-col,
+#anaContent > .three-col {
   margin-bottom: 1.5rem;
 }
 /* Nested cards inside two-col/three-col don't need extra bottom margin */
