@@ -1739,7 +1739,7 @@ img { max-width: 100%; }
   display: grid;
   grid-template-columns: 1fr 70px 52px 70px;
   gap: 0.75rem;
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem 0;
   border-bottom: 1px solid var(--border);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -1762,7 +1762,7 @@ img { max-width: 100%; }
   grid-template-columns: 1fr 70px 52px 70px;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 0;
   border-bottom: 1px solid var(--gray-100);
   transition: background 0.1s;
 }
@@ -1804,7 +1804,7 @@ img { max-width: 100%; }
   grid-template-columns: 24px 1fr 80px 52px 64px;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 0;
   border-bottom: 1px solid var(--gray-100);
   transition: background 0.1s;
 }
